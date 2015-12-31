@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Monitor</string>
+    <string name="unknown_device">unknown_device</string>
 </resources>

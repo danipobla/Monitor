@@ -1,6 +1,7 @@
 package cat.fornons.monitor;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
@@ -11,20 +12,27 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class MonitorActivity extends AppCompatActivity {
 
     private Button btScan,btStop;
-    private TextView tvTrobat;
-    private int trobat =0;
+    private ListView lvBleDevices;
+    private ProgressBar progressbar;
     private static final String LOG_TAG = "BleCollector";
     private int REQUEST_ENABLE_BT=1;
-
+    private BleDeviceListAdapter mBleDeviceListAdapter;
 
     private BluetoothAdapter mBleAdapter;
     private BluetoothLeScanner mBleScanner;
@@ -34,9 +42,12 @@ public class MonitorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_monitor);
 
-        tvTrobat= (TextView) findViewById(R.id.tvTrobat);
         btScan = (Button) findViewById(R.id.btScan);
+        lvBleDevices = (ListView) findViewById(R.id.lvBleDevices);
+        progressbar = (ProgressBar) findViewById(R.id.progressBar);
 
+        mBleDeviceListAdapter = new BleDeviceListAdapter();
+        lvBleDevices.setAdapter(mBleDeviceListAdapter);
 
         mBleAdapter = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE)).getAdapter();
 
@@ -52,21 +63,17 @@ public class MonitorActivity extends AppCompatActivity {
 
 
 
-
-
-
-
-
         mScanCallback = new ScanCallback() {
             @Override
             public void onScanResult(int callbackType, final ScanResult result) {
                 super.onScanResult(callbackType, result);
-                trobat++;
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        tvTrobat.setText(result.getDevice().getName());
-                    //tvTrobat.setText(Integer.toString(trobat));
+                        //if (result.getDevice().getName() !=null){
+                            mBleDeviceListAdapter.addDevice(result.getDevice());
+                    //}
+                            mBleDeviceListAdapter.notifyDataSetChanged();
                     }
                 });
                 Log.e(LOG_TAG, "Dispositiu Trobat");
@@ -87,6 +94,10 @@ public class MonitorActivity extends AppCompatActivity {
         btScan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                progressbar.setVisibility(View.VISIBLE);
+                mBleDeviceListAdapter.clear();
+                mBleDeviceListAdapter.notifyDataSetChanged();
                 mBleScanner.startScan(mScanCallback);
 
             }
@@ -97,7 +108,8 @@ public class MonitorActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mBleScanner.stopScan(mScanCallback);
-                trobat=0;
+                progressbar.setVisibility(View.GONE);
+
             }
         });
 
@@ -107,5 +119,69 @@ public class MonitorActivity extends AppCompatActivity {
 
     }
 
+    public class BleDeviceListAdapter  extends BaseAdapter {
 
+        private ArrayList<BluetoothDevice> mBleDevices;
+        private LayoutInflater mInflator;
+
+        public BleDeviceListAdapter(){
+            mBleDevices = new ArrayList<>();
+            mInflator=MonitorActivity.this.getLayoutInflater();
+        }
+
+        public void addDevice(BluetoothDevice device){
+            if (!mBleDevices.contains(device)){
+                mBleDevices.add(device);
+            }
+        }
+
+        public void clear(){
+            mBleDevices.clear();
+        }
+
+
+        @Override
+        public int getCount() {
+            return mBleDevices.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return mBleDevices.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder viewHolder;
+            // General ListView optimization code.
+            if (convertView == null) {
+                convertView = mInflator.inflate(R.layout.listitem_device, null);
+                viewHolder = new ViewHolder();
+                viewHolder.deviceAddress = (TextView) convertView.findViewById(R.id.device_address);
+                viewHolder.deviceName = (TextView) convertView.findViewById(R.id.device_name);
+                convertView.setTag(viewHolder);
+            } else {
+                viewHolder = (ViewHolder) convertView.getTag();
+            }
+
+            BluetoothDevice device = mBleDevices.get(position);
+            final String deviceName = device.getName();
+            if (deviceName != null && deviceName.length() > 0)
+                viewHolder.deviceName.setText(deviceName);
+            else
+                viewHolder.deviceName.setText(R.string.unknown_device);
+            viewHolder.deviceAddress.setText(device.getAddress());
+
+            return convertView;
+        }
+    }
+    static class ViewHolder {
+        TextView deviceName;
+        TextView deviceAddress;
+    }
 }

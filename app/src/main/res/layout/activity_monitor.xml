@@ -9,14 +9,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="cat.fornons.monitor.MonitorActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        android:layout_below="@+id/btScan"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/tvTrobat" />
-
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -34,5 +26,26 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/btScan"
+        android:id="@+id/frameLayout">
+
+        <ListView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/lvBleDevices" />
+    </FrameLayout>
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar"
+        android:layout_alignTop="@+id/btScan"
+        android:layout_centerHorizontal="true"
+        android:indeterminate="false"
+        android:visibility="invisible" />
 
 </RelativeLayout>
