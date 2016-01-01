@@ -1,5 +1,6 @@
 package cat.fornons.monitor;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
@@ -15,6 +16,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -48,6 +50,17 @@ public class MonitorActivity extends AppCompatActivity {
 
         mBleDeviceListAdapter = new BleDeviceListAdapter();
         lvBleDevices.setAdapter(mBleDeviceListAdapter);
+        lvBleDevices.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.e(LOG_TAG, "Dispositiu seleccionat");
+                final BluetoothDevice device = mBleDeviceListAdapter.getDevice(position);
+                if (device==null) return;
+                final Intent intent = new Intent(view.getContext(),CardiacActivity.class);
+                startActivity(intent);
+
+            }
+        });
 
         mBleAdapter = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE)).getAdapter();
 
@@ -71,9 +84,9 @@ public class MonitorActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         //if (result.getDevice().getName() !=null){
-                            mBleDeviceListAdapter.addDevice(result.getDevice());
-                    //}
-                            mBleDeviceListAdapter.notifyDataSetChanged();
+                        mBleDeviceListAdapter.addDevice(result.getDevice());
+                        //}
+                        mBleDeviceListAdapter.notifyDataSetChanged();
                     }
                 });
                 Log.e(LOG_TAG, "Dispositiu Trobat");
@@ -114,10 +127,20 @@ public class MonitorActivity extends AppCompatActivity {
         });
 
 
+    }
 
-
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode== REQUEST_ENABLE_BT && resultCode== Activity.RESULT_CANCELED){
+            finish();
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
 
     }
+
+
+
 
     public class BleDeviceListAdapter  extends BaseAdapter {
 
@@ -133,6 +156,10 @@ public class MonitorActivity extends AppCompatActivity {
             if (!mBleDevices.contains(device)){
                 mBleDevices.add(device);
             }
+        }
+
+        public BluetoothDevice getDevice(int position){
+            return mBleDevices.get(position);
         }
 
         public void clear(){
