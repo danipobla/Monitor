@@ -35,7 +35,7 @@ public class MonitorActivity extends AppCompatActivity {
     private static final String LOG_TAG = "BleCollector";
     private int REQUEST_ENABLE_BT=1;
     private BleDeviceListAdapter mBleDeviceListAdapter;
-
+    private boolean mScanning =false;
     private BluetoothAdapter mBleAdapter;
     private BluetoothLeScanner mBleScanner;
     private ScanCallback mScanCallback;
@@ -56,7 +56,12 @@ public class MonitorActivity extends AppCompatActivity {
                 Log.e(LOG_TAG, "Dispositiu seleccionat");
                 final BluetoothDevice device = mBleDeviceListAdapter.getDevice(position);
                 if (device==null) return;
+                if (mScanning){
+                    mBleScanner.stopScan(mScanCallback);
+                }
                 final Intent intent = new Intent(view.getContext(),CardiacActivity.class);
+                intent.putExtra(CardiacActivity.EXTRAS_DEVICE_NAME,device.getName());
+                intent.putExtra(CardiacActivity.EXTRAS_DEVICE_ADDRESS,device.getAddress());
                 startActivity(intent);
 
             }
@@ -112,7 +117,7 @@ public class MonitorActivity extends AppCompatActivity {
                 mBleDeviceListAdapter.clear();
                 mBleDeviceListAdapter.notifyDataSetChanged();
                 mBleScanner.startScan(mScanCallback);
-
+                mScanning =true;
             }
         });
 
@@ -122,7 +127,7 @@ public class MonitorActivity extends AppCompatActivity {
             public void onClick(View v) {
                 mBleScanner.stopScan(mScanCallback);
                 progressbar.setVisibility(View.GONE);
-
+                mScanning=false;
             }
         });
 
