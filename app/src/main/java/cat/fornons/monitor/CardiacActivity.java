@@ -52,6 +52,8 @@ public class CardiacActivity extends AppCompatActivity {
 
         mGatt = device.connectGatt(this, false, gattCallback);
         mGatt.discoverServices();
+
+
     }
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
@@ -114,6 +116,15 @@ public class CardiacActivity extends AppCompatActivity {
             }
             final int heartRate = characteristic.getIntValue(format, 1);
             Log.i("READ", String.format("Received heart rate: %d", heartRate));
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // TODO Auto-generated method stub
+
+                    tvAddress.setText(String.valueOf(heartRate));
+                }
+            });
 
         }
 
