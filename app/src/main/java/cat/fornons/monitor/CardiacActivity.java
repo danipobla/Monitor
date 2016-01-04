@@ -29,7 +29,7 @@ public class CardiacActivity extends AppCompatActivity {
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
-    private List<BluetoothGattCharacteristic> characteristics;
+    private BluetoothGattCharacteristic characteristic;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,25 +76,46 @@ public class CardiacActivity extends AppCompatActivity {
 
             List<BluetoothGattService> services = gatt.getServices();
             Log.i("onServicesDiscovered", services.toString());
+            Log.i("Servei", services.get(2).getCharacteristics().get(0).toString());
+            characteristic = services.get(2).getCharacteristic(UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb"));
+            gatt.readCharacteristic(characteristic);
+            gatt.setCharacteristicNotification(characteristic, true);
+           BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            gatt.writeDescriptor(descriptor);
 
-            gatt.readCharacteristic(services.get(4).getCharacteristics().get(0));
 
         }
+
+
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt,
                                          BluetoothGattCharacteristic
                                                  characteristic, int status) {
-            Log.i("onCharacteristicRead", characteristic.toString());
-            gatt.disconnect();
+            byte[] data = characteristic.getValue();
+            Log.i("Read", data.toString());
+            //gatt.disconnect();
+
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            //super.onCharacteristicChanged(gatt, characteristic);
-            byte[] data = characteristic.getValue();
-            //Log.i("onCharacteristicRead", data.toString());
+            super.onCharacteristicChanged(gatt, characteristic);
+             int flag = characteristic.getProperties();
+            int format = -1;
+
+            if ((flag & 0x01) != 0) {
+                format = BluetoothGattCharacteristic.FORMAT_UINT16;
+                Log.i("w", "Heart rate format UINT16.");
+            } else {
+                format = BluetoothGattCharacteristic.FORMAT_UINT8;
+                Log.i("w", "Heart rate format UINT8.");
+            }
+            final int heartRate = characteristic.getIntValue(format, 1);
+            Log.i("READ", String.format("Received heart rate: %d", heartRate));
 
         }
+
     };
 }
