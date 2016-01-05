@@ -10,10 +10,12 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -23,9 +25,11 @@ import java.util.UUID;
 
 public class CardiacActivity extends AppCompatActivity {
     private TextView tvNom, tvAddress,tvCor;
+    private Button btStart, btStop;
     private String mDeviceName,mDeviceAddress;
     private BluetoothAdapter mBluetoohAdapter;
     private BluetoothManager mBluetoohManager;
+    private BluetoothDevice device;
     private BluetoothGatt mGatt = null;
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
@@ -40,6 +44,29 @@ public class CardiacActivity extends AppCompatActivity {
         tvNom= (TextView) findViewById(R.id.tvNom);
         tvAddress= (TextView) findViewById(R.id.tvAddress);
         tvCor = (TextView) findViewById(R.id.tvCor);
+        btStart=(Button) findViewById(R.id.btStartHRM);
+        btStop=(Button)findViewById(R.id.btStopHRM);
+        btStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mGatt == null) {
+                    btStart.setVisibility(View.GONE);
+                    btStop.setVisibility(View.VISIBLE);
+                    mGatt = device.connectGatt(v.getContext(), false, gattCallback);
+                    }
+            }
+        });
+
+        btStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mGatt != null) {
+                    desconnectar();
+                }
+
+            }
+        });
+
 
         final Intent intent = getIntent();
         mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
@@ -50,13 +77,36 @@ public class CardiacActivity extends AppCompatActivity {
         tvAddress.setText(mDeviceAddress);
         mBluetoohManager= (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoohAdapter = mBluetoohManager.getAdapter();
-        BluetoothDevice device = mBluetoohAdapter.getRemoteDevice(mDeviceAddress);
+        device = mBluetoohAdapter.getRemoteDevice(mDeviceAddress);
 
-        mGatt = device.connectGatt(this, false, gattCallback);
-        mGatt.discoverServices();
+
+
 
 
     }
+    private void desconnectar(){
+        btStart.setVisibility(View.VISIBLE);
+        btStop.setVisibility(View.GONE);
+        mGatt.disconnect();
+        mGatt = null;
+        tvCor.setText("");
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        close();
+    }
+
+    public void close() {
+        if (mGatt == null) {
+            return;
+        }
+        mGatt.close();
+        mGatt = null;
+    }
+
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -64,10 +114,19 @@ public class CardiacActivity extends AppCompatActivity {
             switch (newState) {
                 case BluetoothProfile.STATE_CONNECTED:
                     Log.i("gattCallback", "STATE_CONNECTED");
-                    gatt.discoverServices();
+                    mGatt.discoverServices();
+                    mGatt.connect();
                     break;
                 case BluetoothProfile.STATE_DISCONNECTED:
                     Log.e("gattCallback", "STATE_DISCONNECTED");
+                    if (mGatt !=null){
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                desconnectar();
+                            }
+                        });
+                    }
                     break;
                 default:
                     Log.e("gattCallback", "STATE_OTHER");
@@ -99,7 +158,6 @@ public class CardiacActivity extends AppCompatActivity {
                                                  characteristic, int status) {
             byte[] data = characteristic.getValue();
             Log.i("Read", data.toString());
-            //gatt.disconnect();
 
         }
 

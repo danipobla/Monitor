@@ -88,7 +88,6 @@ public class MonitorActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        //if (result.getDevice().getName() !=null){
                         mBleDeviceListAdapter.addDevice(result.getDevice());
                         //}
                         mBleDeviceListAdapter.notifyDataSetChanged();
@@ -112,12 +111,8 @@ public class MonitorActivity extends AppCompatActivity {
         btScan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+            connect();
 
-                progressbar.setVisibility(View.VISIBLE);
-                mBleDeviceListAdapter.clear();
-                mBleDeviceListAdapter.notifyDataSetChanged();
-                mBleScanner.startScan(mScanCallback);
-                mScanning =true;
             }
         });
 
@@ -125,13 +120,29 @@ public class MonitorActivity extends AppCompatActivity {
         btStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mBleScanner.stopScan(mScanCallback);
-                progressbar.setVisibility(View.GONE);
-                mScanning=false;
+                disconnect();
             }
         });
+    }
 
+    private void connect(){
+        progressbar.setVisibility(View.VISIBLE);
+        mBleDeviceListAdapter.clear();
+        mBleDeviceListAdapter.notifyDataSetChanged();
+        mBleScanner.startScan(mScanCallback);
+        mScanning =true;
+    }
 
+    private void disconnect() {
+        mBleScanner.stopScan(mScanCallback);
+        progressbar.setVisibility(View.GONE);
+        mScanning=false;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        disconnect();
     }
 
     @Override
