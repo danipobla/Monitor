@@ -15,13 +15,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
 import java.util.UUID;
 
 public class CardiacActivity extends AppCompatActivity {
-    private TextView tvNom, tvAddress;
+    private TextView tvNom, tvAddress,tvCor;
     private String mDeviceName,mDeviceAddress;
     private BluetoothAdapter mBluetoohAdapter;
     private BluetoothManager mBluetoohManager;
@@ -38,6 +39,7 @@ public class CardiacActivity extends AppCompatActivity {
 
         tvNom= (TextView) findViewById(R.id.tvNom);
         tvAddress= (TextView) findViewById(R.id.tvAddress);
+        tvCor = (TextView) findViewById(R.id.tvCor);
 
         final Intent intent = getIntent();
         mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
@@ -120,9 +122,7 @@ public class CardiacActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    // TODO Auto-generated method stub
-
-                    tvAddress.setText(String.valueOf(heartRate));
+                    tvCor.setText(String.valueOf(heartRate));
                 }
             });
 
