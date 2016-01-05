@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class CardiacActivity extends AppCompatActivity {
-    private TextView tvNom, tvAddress,tvCor;
+    private TextView tvNom, tvAddress,tvCor,tvWidget;
     private Button btStart, btStop;
     private String mDeviceName,mDeviceAddress;
     private BluetoothAdapter mBluetoohAdapter;
@@ -42,6 +42,8 @@ public class CardiacActivity extends AppCompatActivity {
         setContentView(R.layout.activity_cardiac);
 
         tvNom= (TextView) findViewById(R.id.tvNom);
+        tvWidget= (TextView) findViewById(R.id.tvWidget);
+
         tvAddress= (TextView) findViewById(R.id.tvAddress);
         tvCor = (TextView) findViewById(R.id.tvCor);
         btStart=(Button) findViewById(R.id.btStartHRM);
@@ -138,14 +140,19 @@ public class CardiacActivity extends AppCompatActivity {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
 
             List<BluetoothGattService> services = gatt.getServices();
-            Log.i("onServicesDiscovered", services.toString());
-            Log.i("Servei", services.get(2).getCharacteristics().get(0).toString());
-            characteristic = services.get(2).getCharacteristic(UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb"));
-            gatt.readCharacteristic(characteristic);
-            gatt.setCharacteristicNotification(characteristic, true);
-           BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            gatt.writeDescriptor(descriptor);
+
+            for (BluetoothGattService service : services) {
+                if (service.getUuid().equals(UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb"))){
+                    characteristic = service.getCharacteristic(UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb"));
+
+                    gatt.readCharacteristic(characteristic);
+                    gatt.setCharacteristicNotification(characteristic, true);
+                    BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
+                    descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                    gatt.writeDescriptor(descriptor);
+                }
+            }
+
 
 
         }
