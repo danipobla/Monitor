@@ -1,5 +1,6 @@
 package cat.fornons.monitor;
 
+import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -9,9 +10,11 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,6 +37,9 @@ public class CardiacActivity extends AppCompatActivity {
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
+    private SharedPreferences prefs;
+    private  String recorda;
+
     private BluetoothGattCharacteristic characteristic;
 
     @Override
@@ -55,7 +61,8 @@ public class CardiacActivity extends AppCompatActivity {
                     btStart.setVisibility(View.GONE);
                     btStop.setVisibility(View.VISIBLE);
                     mGatt = device.connectGatt(v.getContext(), false, gattCallback);
-                    }
+                }
+                mGatt.discoverServices();
             }
         });
 
@@ -87,19 +94,24 @@ public class CardiacActivity extends AppCompatActivity {
 
     }
     private void desconnectar(){
+        if (mGatt!=null) {
+            mGatt.disconnect();
+            mGatt = null;
+        }
         btStart.setVisibility(View.VISIBLE);
         btStop.setVisibility(View.GONE);
-        mGatt.disconnect();
-        mGatt = null;
-        tvCor.setText("");
+        nou_valor("");
     }
 
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        desconnectar();
         close();
+        super.onDestroy();
     }
+
+
 
     public void close() {
         if (mGatt == null) {
@@ -116,8 +128,8 @@ public class CardiacActivity extends AppCompatActivity {
             switch (newState) {
                 case BluetoothProfile.STATE_CONNECTED:
                     Log.i("gattCallback", "STATE_CONNECTED");
-                    mGatt.discoverServices();
                     mGatt.connect();
+                    mGatt.discoverServices();
                     break;
                 case BluetoothProfile.STATE_DISCONNECTED:
                     Log.e("gattCallback", "STATE_DISCONNECTED");
@@ -183,15 +195,33 @@ public class CardiacActivity extends AppCompatActivity {
             }
             final int heartRate = characteristic.getIntValue(format, 1);
             Log.i("READ", String.format("Received heart rate: %d", heartRate));
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    tvCor.setText(String.valueOf(heartRate));
-                }
-            });
+            nou_valor(String.valueOf(heartRate));
 
         }
 
     };
+
+    public void nou_valor( final String valor){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                tvCor.setText(valor);
+                prefs = getSharedPreferences("preferencies", Context.MODE_PRIVATE);
+
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString("hr",valor);
+                editor.commit();
+
+                Intent intent = new Intent(getApplication().getApplicationContext(),HRWidget.class );
+                intent.setAction("android.appwidget.action.APPWIDGET_UPDATE");
+                int ids[] = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), HRWidget.class));
+                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+                sendBroadcast(intent);
+
+            }
+        });
+    }
+
 }
+

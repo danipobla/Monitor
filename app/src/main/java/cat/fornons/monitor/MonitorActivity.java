@@ -7,7 +7,6 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
-import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -77,7 +76,6 @@ public class MonitorActivity extends AppCompatActivity {
 
 
         mBleScanner = mBleAdapter.getBluetoothLeScanner();
-       // ScanSettings mBleSettings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build();
 
 
 
@@ -144,6 +142,7 @@ public class MonitorActivity extends AppCompatActivity {
         super.onStop();
         disconnect();
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -227,4 +226,6 @@ public class MonitorActivity extends AppCompatActivity {
         TextView deviceName;
         TextView deviceAddress;
     }
+
+
 }
