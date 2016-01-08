@@ -27,9 +27,9 @@ public class HRWidget extends AppWidgetProvider {
         views.setTextViewText(R.id.tvWidget, widgetText);
 
 
-        /*Intent configIntent = new Intent(context, CardiacActivity.class);
-        PendingIntent configPendingIntent = PendingIntent.getActivity(context, 0, configIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        views.setOnClickPendingIntent(R.id.tvWidget, configPendingIntent);*/
+        Intent configIntent = new Intent(context, CardiacActivity.class);
+        PendingIntent configPendingIntent = PendingIntent.getActivity(context, 0, configIntent, 0);
+        views.setOnClickPendingIntent(R.id.tvWidget, configPendingIntent);
 
 
 

@@ -2,21 +2,26 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/transparent"
-    android:padding="@dimen/widget_margin">
+    android:padding="@dimen/widget_margin"
+    android:orientation="vertical">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:layout_margin="8dp"
         android:background="@drawable/ic_favorite_24dp"
         android:textColor="@android:color/white"
         android:textStyle="bold"
+        android:textSize="30dp"
         android:gravity="center"
         android:textIsSelectable="false"
         android:textAlignment="inherit"
         android:layout_alignParentTop="true"
-        android:id="@+id/tvWidget" />
+        android:id="@+id/tvWidget"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_gravity="center_horizontal" />
+
 
 </RelativeLayout>

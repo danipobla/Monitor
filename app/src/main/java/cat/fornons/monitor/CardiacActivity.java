@@ -18,11 +18,16 @@ import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,13 +39,11 @@ public class CardiacActivity extends AppCompatActivity {
     private BluetoothManager mBluetoohManager;
     private BluetoothDevice device;
     private BluetoothGatt mGatt = null;
+    private BluetoothGattCharacteristic characteristic;
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
-
     private SharedPreferences prefs;
-    private  String recorda;
-
-    private BluetoothGattCharacteristic characteristic;
+    private Hrm mHrm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,11 +61,12 @@ public class CardiacActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (mGatt == null) {
-                    btStart.setVisibility(View.GONE);
+                   btStart.setVisibility(View.GONE);
                     btStop.setVisibility(View.VISIBLE);
                     mGatt = device.connectGatt(v.getContext(), false, gattCallback);
                 }
                 mGatt.discoverServices();
+
             }
         });
 
@@ -81,15 +85,17 @@ public class CardiacActivity extends AppCompatActivity {
         mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
 
-
-        tvNom.setText(mDeviceName);
-        tvAddress.setText(mDeviceAddress);
-        mBluetoohManager= (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        mBluetoohAdapter = mBluetoohManager.getAdapter();
-        device = mBluetoohAdapter.getRemoteDevice(mDeviceAddress);
-
-
-
+        if (mDeviceAddress==null || mDeviceName==null){
+            btStart.setVisibility(View.GONE);
+            btStart.setVisibility(View.GONE);
+        }else {
+            btStart.setVisibility(View.VISIBLE);
+            tvNom.setText(mDeviceName);
+            tvAddress.setText(mDeviceAddress);
+            mBluetoohManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+            mBluetoohAdapter = mBluetoohManager.getAdapter();
+            device = mBluetoohAdapter.getRemoteDevice(mDeviceAddress);
+        }
 
 
     }
@@ -100,7 +106,7 @@ public class CardiacActivity extends AppCompatActivity {
         }
         btStart.setVisibility(View.VISIBLE);
         btStop.setVisibility(View.GONE);
-        nou_valor("");
+        nou_valor("","");
     }
 
 
@@ -172,36 +178,33 @@ public class CardiacActivity extends AppCompatActivity {
 
 
         @Override
-        public void onCharacteristicRead(BluetoothGatt gatt,
-                                         BluetoothGattCharacteristic
-                                                 characteristic, int status) {
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             byte[] data = characteristic.getValue();
-            Log.i("Read", data.toString());
-
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
              int flag = characteristic.getProperties();
-            int format = -1;
+            int format;
+            Calendar c = Calendar.getInstance();
+            Long seconds = c.getTimeInMillis();
 
             if ((flag & 0x01) != 0) {
                 format = BluetoothGattCharacteristic.FORMAT_UINT16;
-                Log.i("w", "Heart rate format UINT16.");
-            } else {
+             } else {
                 format = BluetoothGattCharacteristic.FORMAT_UINT8;
-                Log.i("w", "Heart rate format UINT8.");
-            }
+             }
             final int heartRate = characteristic.getIntValue(format, 1);
+
             Log.i("READ", String.format("Received heart rate: %d", heartRate));
-            nou_valor(String.valueOf(heartRate));
+            nou_valor(String.valueOf(heartRate),String.valueOf(seconds));
 
         }
 
     };
 
-    public void nou_valor( final String valor){
+    public void nou_valor( final String valor, final String data){
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -210,7 +213,7 @@ public class CardiacActivity extends AppCompatActivity {
                 prefs = getSharedPreferences("preferencies", Context.MODE_PRIVATE);
 
                 SharedPreferences.Editor editor = prefs.edit();
-                editor.putString("hr",valor);
+                editor.putString("hr", valor);
                 editor.commit();
 
                 Intent intent = new Intent(getApplication().getApplicationContext(),HRWidget.class );
@@ -219,8 +222,39 @@ public class CardiacActivity extends AppCompatActivity {
                 intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
                 sendBroadcast(intent);
 
+               // mHrm.setHrm(valor, data, "", "", "");
+
             }
         });
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+
+
+        // Handle item selection
+
+        switch (item.getItemId()) {
+            case R.id.device:
+                final Intent intent = new Intent(this,MonitorActivity.class);
+                //intent.putExtra(CardiacActivity.EXTRAS_DEVICE_NAME,device.getName());
+                //intent.putExtra(CardiacActivity.EXTRAS_DEVICE_ADDRESS,device.getAddress());
+                startActivity(intent);
+                 return true;
+            case R.id.user:
+                //showHelp();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
 }

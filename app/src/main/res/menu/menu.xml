@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/device"
+        android:icon="@drawable/ic_blur_on_24dp"
+        android:title="@string/device"
+        android:showAsAction="ifRoom"/>
+    <item android:id="@+id/user"
+        android:icon="@drawable/ic_person_24dp"
+        android:title="@string/user"
+        android:showAsAction="never"/>
+</menu>

@@ -3,4 +3,7 @@
     <string name="unknown_device">unknown_device</string>
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_widget">Add widget</string>
+    <string name="user">User</string>
+    <string name="device">Device</string>
+    <string name="connect">Add Device</string>
 </resources>

@@ -14,17 +14,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Large Text"
         android:id="@+id/tvNom"
         android:layout_below="@+id/tvCor"
         android:layout_centerHorizontal="true"
-        android:gravity="center" />
+        android:gravity="center"
+        android:text="@string/connect" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Medium Text"
         android:id="@+id/tvAddress"
         android:layout_below="@+id/tvNom"
         android:layout_alignParentStart="true"
@@ -50,7 +49,8 @@
         android:text="START"
         android:id="@+id/btStartHRM"
         android:layout_alignTop="@+id/tvCor"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:visibility="gone" />
 
     <Button
         android:layout_width="wrap_content"
