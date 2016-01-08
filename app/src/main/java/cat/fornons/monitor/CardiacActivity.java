@@ -26,9 +26,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 public class CardiacActivity extends AppCompatActivity {
@@ -43,6 +45,7 @@ public class CardiacActivity extends AppCompatActivity {
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
     private SharedPreferences prefs;
+    private boolean Beating= false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,7 +67,7 @@ public class CardiacActivity extends AppCompatActivity {
                     mGatt = device.connectGatt(v.getContext(), false, gattCallback);
                 }
                 mGatt.discoverServices();
-
+                Beating=true;
             }
         });
 
@@ -79,6 +82,13 @@ public class CardiacActivity extends AppCompatActivity {
         });
 
 
+
+
+    }
+
+    @Override
+    protected void onResume() {
+
         final Intent intent = getIntent();
         mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
@@ -87,16 +97,27 @@ public class CardiacActivity extends AppCompatActivity {
             btStart.setVisibility(View.GONE);
             btStart.setVisibility(View.GONE);
         }else {
-            btStart.setVisibility(View.VISIBLE);
-            tvNom.setText(mDeviceName);
-            tvAddress.setText(mDeviceAddress);
-            mBluetoohManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-            mBluetoohAdapter = mBluetoohManager.getAdapter();
-            device = mBluetoohAdapter.getRemoteDevice(mDeviceAddress);
+            if (!Beating) {
+                btStart.setVisibility(View.VISIBLE);
+                btStop.setVisibility(View.GONE);
+                tvNom.setText(mDeviceName);
+                tvAddress.setText(mDeviceAddress);
+                mBluetoohManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+                mBluetoohAdapter = mBluetoohManager.getAdapter();
+                device = mBluetoohAdapter.getRemoteDevice(mDeviceAddress);
+            }else{
+                btStart.setVisibility(View.GONE);
+                btStop.setVisibility(View.VISIBLE);
+            }
         }
-
-
+        super.onResume();
     }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+    }
+
     private void desconnectar(){
         if (mGatt!=null) {
             mGatt.disconnect();
@@ -105,6 +126,7 @@ public class CardiacActivity extends AppCompatActivity {
         btStart.setVisibility(View.VISIBLE);
         btStop.setVisibility(View.GONE);
         nou_valor("","");
+        Beating=false;
     }
 
 
@@ -182,10 +204,9 @@ public class CardiacActivity extends AppCompatActivity {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
-             int flag = characteristic.getProperties();
+            int flag = characteristic.getProperties();
             int format;
-            Calendar c = Calendar.getInstance();
-            Long seconds = c.getTimeInMillis();
+           SimpleDateFormat data = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS",Locale.getDefault());
 
             if ((flag & 0x01) != 0) {
                 format = BluetoothGattCharacteristic.FORMAT_UINT16;
@@ -194,8 +215,8 @@ public class CardiacActivity extends AppCompatActivity {
              }
             final int heartRate = characteristic.getIntValue(format, 1);
 
-            Log.i("READ", String.format("Received heart rate: %d", heartRate));
-            nou_valor(String.valueOf(heartRate),String.valueOf(seconds));
+            Log.i("READ", String.format("Received heart rate: %d - %s", heartRate, data.format(new Date())));
+            nou_valor(String.valueOf(heartRate),data.format(new Date()));
 
         }
 
