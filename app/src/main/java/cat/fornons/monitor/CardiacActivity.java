@@ -43,8 +43,6 @@ public class CardiacActivity extends AppCompatActivity {
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
     private SharedPreferences prefs;
-    private Hrm mHrm;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,7 +114,6 @@ public class CardiacActivity extends AppCompatActivity {
         close();
         super.onDestroy();
     }
-
 
 
     public void close() {
