@@ -12,7 +12,6 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
@@ -23,11 +22,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -46,6 +44,8 @@ public class CardiacActivity extends AppCompatActivity {
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
     private SharedPreferences prefs;
     private boolean Beating= false;
+    private HRMesurent mHRMesurent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -189,9 +189,6 @@ public class CardiacActivity extends AppCompatActivity {
                     gatt.writeDescriptor(descriptor);
                 }
             }
-
-
-
         }
 
 
@@ -240,8 +237,7 @@ public class CardiacActivity extends AppCompatActivity {
                 intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
                 sendBroadcast(intent);
 
-               // mHrm.setHrm(valor, data, "", "", "");
-
+                mHRMesurent.setHRM(valor, data, "", "", "");
             }
         });
     }
@@ -254,16 +250,9 @@ public class CardiacActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
-
-
-        // Handle item selection
-
         switch (item.getItemId()) {
             case R.id.device:
                 final Intent intent = new Intent(this,MonitorActivity.class);
-                //intent.putExtra(CardiacActivity.EXTRAS_DEVICE_NAME,device.getName());
-                //intent.putExtra(CardiacActivity.EXTRAS_DEVICE_ADDRESS,device.getAddress());
                 startActivity(intent);
                  return true;
             case R.id.user:

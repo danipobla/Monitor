@@ -20,7 +20,7 @@ public class HRWidget extends AppWidgetProvider {
 
         //Obtenim les preferencies
         SharedPreferences sharedPref = context.getSharedPreferences("preferencies", Context.MODE_PRIVATE);
-        String widgetText = sharedPref.getString("hr","--");
+        String widgetText = sharedPref.getString("hr","");
 
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.hrwidget);
@@ -48,7 +48,7 @@ public class HRWidget extends AppWidgetProvider {
             updateAppWidget(context, appWidgetManager, appWidgetId);
             //Obtenim les preferencies
             SharedPreferences sharedPref = context.getSharedPreferences("preferencies", Context.MODE_PRIVATE);
-            String widgetText = sharedPref.getString("hr","--");
+            String widgetText = sharedPref.getString("hr","");
 
             // Construct the RemoteViews object
 
