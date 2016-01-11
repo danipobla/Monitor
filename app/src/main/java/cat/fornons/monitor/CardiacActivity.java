@@ -24,7 +24,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import java.io.File;
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -33,7 +36,7 @@ import java.util.UUID;
 
 public class CardiacActivity extends AppCompatActivity {
     private TextView tvNom, tvAddress,tvCor,tvWidget;
-    private Button btStart, btStop;
+    private Button btStartHRM, btStopHRM, btRecOn, btRecOff;
     private String mDeviceName,mDeviceAddress;
     private BluetoothAdapter mBluetoohAdapter;
     private BluetoothManager mBluetoohManager;
@@ -44,7 +47,10 @@ public class CardiacActivity extends AppCompatActivity {
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
     private SharedPreferences prefs;
     private boolean Beating= false;
+    private boolean Recording =false;
     private HRMesurent mHRMesurent;
+    FileOutputStream outputStream;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,22 +62,24 @@ public class CardiacActivity extends AppCompatActivity {
 
         tvAddress= (TextView) findViewById(R.id.tvAddress);
         tvCor = (TextView) findViewById(R.id.tvCor);
-        btStart=(Button) findViewById(R.id.btStartHRM);
-        btStop=(Button)findViewById(R.id.btStopHRM);
-        btStart.setOnClickListener(new View.OnClickListener() {
+        btStartHRM =(Button) findViewById(R.id.btStartHRM);
+        btStopHRM =(Button)findViewById(R.id.btStopHRM);
+        btRecOn=(Button) findViewById(R.id.btRecOn);
+        btRecOff=(Button)findViewById(R.id.btRecOff);
+        btStartHRM.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mGatt == null) {
-                   btStart.setVisibility(View.GONE);
-                    btStop.setVisibility(View.VISIBLE);
+                    btStartHRM.setVisibility(View.GONE);
+                    btStopHRM.setVisibility(View.VISIBLE);
                     mGatt = device.connectGatt(v.getContext(), false, gattCallback);
                 }
                 mGatt.discoverServices();
-                Beating=true;
+                Beating = true;
             }
         });
 
-        btStop.setOnClickListener(new View.OnClickListener() {
+        btStopHRM.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mGatt != null) {
@@ -82,6 +90,38 @@ public class CardiacActivity extends AppCompatActivity {
         });
 
 
+        btRecOn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (Beating) {
+                    Recording = true;
+                }
+
+            }
+        });
+
+
+        btRecOff.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Recording = false;
+                try {
+                    BufferedReader fin =
+                            new BufferedReader(
+                                    new InputStreamReader(
+                                           v.getContext().openFileInput("filename.txt")));
+
+                    String a = fin.readLine();
+                    Log.i("READ", a);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+
+        });
 
 
     }
@@ -94,20 +134,20 @@ public class CardiacActivity extends AppCompatActivity {
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
 
         if (mDeviceAddress==null || mDeviceName==null){
-            btStart.setVisibility(View.GONE);
-            btStart.setVisibility(View.GONE);
+            btStartHRM.setVisibility(View.GONE);
+            btStartHRM.setVisibility(View.GONE);
         }else {
             if (!Beating) {
-                btStart.setVisibility(View.VISIBLE);
-                btStop.setVisibility(View.GONE);
+                btStartHRM.setVisibility(View.VISIBLE);
+                btStopHRM.setVisibility(View.GONE);
                 tvNom.setText(mDeviceName);
                 tvAddress.setText(mDeviceAddress);
                 mBluetoohManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
                 mBluetoohAdapter = mBluetoohManager.getAdapter();
                 device = mBluetoohAdapter.getRemoteDevice(mDeviceAddress);
             }else{
-                btStart.setVisibility(View.GONE);
-                btStop.setVisibility(View.VISIBLE);
+                btStartHRM.setVisibility(View.GONE);
+                btStopHRM.setVisibility(View.VISIBLE);
             }
         }
         super.onResume();
@@ -123,8 +163,8 @@ public class CardiacActivity extends AppCompatActivity {
             mGatt.disconnect();
             mGatt = null;
         }
-        btStart.setVisibility(View.VISIBLE);
-        btStop.setVisibility(View.GONE);
+        btStartHRM.setVisibility(View.VISIBLE);
+        btStopHRM.setVisibility(View.GONE);
         nou_valor("","");
         Beating=false;
     }
@@ -231,13 +271,26 @@ public class CardiacActivity extends AppCompatActivity {
                 editor.putString("hr", valor);
                 editor.commit();
 
-                Intent intent = new Intent(getApplication().getApplicationContext(),HRWidget.class );
+                Intent intent = new Intent(getApplication().getApplicationContext(), HRWidget.class);
                 intent.setAction("android.appwidget.action.APPWIDGET_UPDATE");
                 int ids[] = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), HRWidget.class));
                 intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
                 sendBroadcast(intent);
 
-                mHRMesurent.setHRM(valor, data, "", "", "");
+                if (Recording) {
+                    Recording = true;
+                        mHRMesurent = new HRMesurent();
+                        mHRMesurent.setHRM(valor,data);
+
+                    try {
+                        outputStream = openFileOutput("filename.txt", Context.MODE_APPEND);
+                        String aa =mHRMesurent.setJSON().toString();
+                        outputStream.write(aa.getBytes());
+                        outputStream.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         });
     }

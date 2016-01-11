@@ -61,4 +61,20 @@
         android:layout_alignParentEnd="true"
         android:visibility="gone" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="RecOn"
+        android:id="@+id/btRecOn"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="RecOff"
+        android:id="@+id/btRecOff"
+        android:layout_alignTop="@+id/btRecOn"
+        android:layout_alignEnd="@+id/tvAddress" />
+
 </RelativeLayout>

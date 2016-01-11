@@ -44,6 +44,8 @@ public class MonitorActivity extends AppCompatActivity {
         setContentView(R.layout.activity_monitor);
 
         btScan = (Button) findViewById(R.id.btScan);
+
+        btStop = (Button) findViewById(R.id.btStop);
         lvBleDevices = (ListView) findViewById(R.id.lvBleDevices);
         progressbar = (ProgressBar) findViewById(R.id.progressBar);
 
