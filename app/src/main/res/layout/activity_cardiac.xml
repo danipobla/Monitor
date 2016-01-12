@@ -13,21 +13,11 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/tvNom"
-        android:layout_below="@+id/tvCor"
-        android:layout_centerHorizontal="true"
-        android:gravity="center"
-        android:text="@string/connect" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:id="@+id/tvAddress"
-        android:layout_below="@+id/tvNom"
         android:layout_alignParentStart="true"
-        android:gravity="center" />
+        android:gravity="center"
+        android:layout_below="@+id/tvCor" />
 
     <TextView
         android:layout_width="90dp"
@@ -50,7 +40,7 @@
         android:id="@+id/btStartHRM"
         android:layout_alignTop="@+id/tvCor"
         android:layout_alignParentStart="true"
-        android:visibility="gone" />
+        android:onClick="startService" />
 
     <Button
         android:layout_width="wrap_content"
@@ -59,22 +49,6 @@
         android:id="@+id/btStopHRM"
         android:layout_alignTop="@+id/tvCor"
         android:layout_alignParentEnd="true"
-        android:visibility="gone" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="RecOn"
-        android:id="@+id/btRecOn"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="RecOff"
-        android:id="@+id/btRecOff"
-        android:layout_alignTop="@+id/btRecOn"
-        android:layout_alignEnd="@+id/tvAddress" />
+        android:onClick="stopService" />
 
 </RelativeLayout>

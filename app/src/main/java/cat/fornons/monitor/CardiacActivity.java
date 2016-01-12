@@ -1,55 +1,50 @@
 package cat.fornons.monitor;
 
-import android.appwidget.AppWidgetManager;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
+import android.bluetooth.BluetoothClass;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
 
 public class CardiacActivity extends AppCompatActivity {
-    private TextView tvNom, tvAddress,tvCor,tvWidget;
-    private Button btStartHRM, btStopHRM, btRecOn, btRecOff;
-    private String mDeviceName,mDeviceAddress;
-    private BluetoothAdapter mBluetoohAdapter;
-    private BluetoothManager mBluetoohManager;
-    private BluetoothDevice device;
-    private BluetoothGatt mGatt = null;
-    private BluetoothGattCharacteristic characteristic;
+    private TextView tvAddress,tvCor;
+    private String mDeviceAddress;
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
-    private SharedPreferences prefs;
-    private boolean Beating= false;
-    private boolean Recording =false;
-    private HRMesurent mHRMesurent;
-    FileOutputStream outputStream;
+
+    HRService serviceBinder;
+    Intent intent;
+    IntentFilter mIntentFilter;
+
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            serviceBinder = ((HRService.mBinder) service).getService();
+            serviceBinder.mDeviceAddress = mDeviceAddress;
+            startService(intent);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            serviceBinder=null;
+        }
+    };
 
 
     @Override
@@ -57,243 +52,51 @@ public class CardiacActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cardiac);
 
-        tvNom= (TextView) findViewById(R.id.tvNom);
-        tvWidget= (TextView) findViewById(R.id.tvWidget);
 
         tvAddress= (TextView) findViewById(R.id.tvAddress);
         tvCor = (TextView) findViewById(R.id.tvCor);
-        btStartHRM =(Button) findViewById(R.id.btStartHRM);
-        btStopHRM =(Button)findViewById(R.id.btStopHRM);
-        btRecOn=(Button) findViewById(R.id.btRecOn);
-        btRecOff=(Button)findViewById(R.id.btRecOff);
-        btStartHRM.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mGatt == null) {
-                    btStartHRM.setVisibility(View.GONE);
-                    btStopHRM.setVisibility(View.VISIBLE);
-                    mGatt = device.connectGatt(v.getContext(), false, gattCallback);
-                }
-                mGatt.discoverServices();
-                Beating = true;
-            }
-        });
 
-        btStopHRM.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mGatt != null) {
-                    desconnectar();
-                }
+        mDeviceAddress = getIntent().getStringExtra(EXTRAS_DEVICE_ADDRESS);
 
-            }
-        });
+        tvAddress.setText(mDeviceAddress);
+    }
 
-
-        btRecOn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (Beating) {
-                    Recording = true;
-                }
-
-            }
-        });
-
-
-        btRecOff.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Recording = false;
-                try {
-                    BufferedReader fin =
-                            new BufferedReader(
-                                    new InputStreamReader(
-                                           v.getContext().openFileInput("filename.txt")));
-
-                    String a = fin.readLine();
-                    Log.i("READ", a);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-
-            }
-
-        });
-
+    public void startService(View view){
+        intent = new Intent(CardiacActivity.this,HRService.class);
+        bindService(intent, connection, Context.BIND_AUTO_CREATE);
 
     }
+
+    public void stopService(View view)
+    {
+        stopService(new Intent(getBaseContext(), HRService.class));
+    }
+
 
     @Override
     protected void onResume() {
-
-        final Intent intent = getIntent();
-        mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
-        mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
-
-        if (mDeviceAddress==null || mDeviceName==null){
-            btStartHRM.setVisibility(View.GONE);
-            btStartHRM.setVisibility(View.GONE);
-        }else {
-            if (!Beating) {
-                btStartHRM.setVisibility(View.VISIBLE);
-                btStopHRM.setVisibility(View.GONE);
-                tvNom.setText(mDeviceName);
-                tvAddress.setText(mDeviceAddress);
-                mBluetoohManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-                mBluetoohAdapter = mBluetoohManager.getAdapter();
-                device = mBluetoohAdapter.getRemoteDevice(mDeviceAddress);
-            }else{
-                btStartHRM.setVisibility(View.GONE);
-                btStopHRM.setVisibility(View.VISIBLE);
-            }
-        }
         super.onResume();
+        mIntentFilter = new IntentFilter();
+        mIntentFilter.addAction("ACTION_GATT_CONNECTED");
+        mIntentFilter.addAction("ACTION_GATT_DISCONNECTED");
+        mIntentFilter.addAction("ACTION_SERVICES_DISCOVERED");
+        mIntentFilter.addAction("ACTION_DATA_AVAILABLE");
+        registerReceiver(intentReceiver,mIntentFilter);
     }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-    }
-
-    private void desconnectar(){
-        if (mGatt!=null) {
-            mGatt.disconnect();
-            mGatt = null;
-        }
-        btStartHRM.setVisibility(View.VISIBLE);
-        btStopHRM.setVisibility(View.GONE);
-        nou_valor("","");
-        Beating=false;
-    }
-
 
     @Override
     protected void onDestroy() {
-        desconnectar();
-        close();
         super.onDestroy();
     }
 
 
-    public void close() {
-        if (mGatt == null) {
-            return;
-        }
-        mGatt.close();
-        mGatt = null;
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(intentReceiver);
     }
 
-    private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            Log.i("onConnectionStateChange", "Status: " + status);
-            switch (newState) {
-                case BluetoothProfile.STATE_CONNECTED:
-                    Log.i("gattCallback", "STATE_CONNECTED");
-                    mGatt.connect();
-                    mGatt.discoverServices();
-                    break;
-                case BluetoothProfile.STATE_DISCONNECTED:
-                    Log.e("gattCallback", "STATE_DISCONNECTED");
-                    if (mGatt !=null){
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                desconnectar();
-                            }
-                        });
-                    }
-                    break;
-                default:
-                    Log.e("gattCallback", "STATE_OTHER");
-            }
-
-        }
-
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-
-            List<BluetoothGattService> services = gatt.getServices();
-
-            for (BluetoothGattService service : services) {
-                if (service.getUuid().equals(UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb"))){
-                    characteristic = service.getCharacteristic(UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb"));
-
-                    gatt.readCharacteristic(characteristic);
-                    gatt.setCharacteristicNotification(characteristic, true);
-                    BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
-                    descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                    gatt.writeDescriptor(descriptor);
-                }
-            }
-        }
-
-
-
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            byte[] data = characteristic.getValue();
-        }
-
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            super.onCharacteristicChanged(gatt, characteristic);
-            int flag = characteristic.getProperties();
-            int format;
-           SimpleDateFormat data = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS",Locale.getDefault());
-
-            if ((flag & 0x01) != 0) {
-                format = BluetoothGattCharacteristic.FORMAT_UINT16;
-             } else {
-                format = BluetoothGattCharacteristic.FORMAT_UINT8;
-             }
-            final int heartRate = characteristic.getIntValue(format, 1);
-
-            Log.i("READ", String.format("Received heart rate: %d - %s", heartRate, data.format(new Date())));
-            nou_valor(String.valueOf(heartRate),data.format(new Date()));
-
-        }
-
-    };
-
-    public void nou_valor( final String valor, final String data){
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-
-                tvCor.setText(valor);
-                prefs = getSharedPreferences("preferencies", Context.MODE_PRIVATE);
-
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putString("hr", valor);
-                editor.commit();
-
-                Intent intent = new Intent(getApplication().getApplicationContext(), HRWidget.class);
-                intent.setAction("android.appwidget.action.APPWIDGET_UPDATE");
-                int ids[] = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), HRWidget.class));
-                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
-                sendBroadcast(intent);
-
-                if (Recording) {
-                    Recording = true;
-                        mHRMesurent = new HRMesurent();
-                        mHRMesurent.setHRM(valor,data);
-
-                    try {
-                        outputStream = openFileOutput("filename.txt", Context.MODE_APPEND);
-                        String aa =mHRMesurent.setJSON().toString();
-                        outputStream.write(aa.getBytes());
-                        outputStream.close();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -316,6 +119,48 @@ public class CardiacActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    public BroadcastReceiver intentReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action= intent.getAction();
+            if (action.equals("ACTION_DATA_AVAILABLE")){
+                tvCor.setText(intent.getStringExtra("valor"));
+            }
+            else if (action.equals("ACTION_GATT_CONNECTED")){
+
+            }else if(action.equals("ACTION_GATT_DISCONNECTED")){
+
+            }else if(action.equals("ACTION_SERVICE_DISCOVERED")){
+
+            }
+        }
+    };
+
+    private void notificacio(String valor) {
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_favorite_24dp)
+                        .setContentTitle("My notification")
+                        .setContentText(valor);
+        Intent resultIntent = new Intent(this, CardiacActivity.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+// Adds the back stack for the Intent (but not the Intent itself)
+        stackBuilder.addParentStack(CardiacActivity.class);
+// Adds the Intent that starts the Activity to the top of the stack
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(
+                        0,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        mBuilder.setContentIntent(resultPendingIntent);
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+// mId allows you to update the notification later on.
+        mNotificationManager.notify(1524, mBuilder.build());}
+
+
 
 }
 
