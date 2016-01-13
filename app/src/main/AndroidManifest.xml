@@ -11,9 +11,10 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".CardiacActivity"
-            android:screenOrientation="portrait"
-            android:launchMode="singleTop">
+        <activity
+            android:name=".CardiacActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -21,6 +22,11 @@
             </intent-filter>
         </activity>
         <activity android:name=".MonitorActivity" />
+
+        <service
+            android:name=".HRService"
+            android:enabled="true"
+            android:exported="true" />
 
         <receiver android:name=".HRWidget">
             <intent-filter>
