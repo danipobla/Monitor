@@ -45,7 +45,7 @@ public class HRService extends Service {
     private SharedPreferences prefs;
     private final IBinder binder = new mBinder();
 
-    public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
+   // public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
 
     public class mBinder extends Binder {
@@ -65,14 +65,17 @@ public class HRService extends Service {
 
 
         if (mGatt == null) {
+            mDeviceAddress= intent.getStringExtra("EXTRAS_DEVICE_ADDRESS");
             mBluetoohManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             mBluetoohAdapter = mBluetoohManager.getAdapter();
             device = mBluetoohAdapter.getRemoteDevice(mDeviceAddress);
+
             mGatt = device.connectGatt(getBaseContext(), false, gattCallback);
+
 
         }
 
-        return START_STICKY;
+        return START_REDELIVER_INTENT;
     }
 
 
@@ -160,24 +163,18 @@ public class HRService extends Service {
     };
 
     public void nou_valor( final String valor, final String data){
- /*               prefs = getSharedPreferences("preferencies", Context.MODE_PRIVATE);
+        Intent intent = new Intent(this,HRWidget.class);
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        int[] ids = AppWidgetManager.getInstance(getApplicationContext()).getAppWidgetIds(new ComponentName(getApplication(),HRWidget.class));
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,ids);
+        intent.putExtra("valor",valor);
+        sendBroadcast(intent);
 
-
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putString("hr", valor);
-                editor.commit();
-
-                Intent intent = new Intent(getApplication().getApplicationContext(), HRWidget.class);
-                intent.setAction("android.appwidget.action.APPWIDGET_UPDATE");
-                int ids[] = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), HRWidget.class));
-                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
-                intent.putExtra("valor",valor);
-                sendBroadcast(intent);
-
-*/
         broadcastUpdate("ACTION_DATA_AVAILABLE", valor);
 
     }
+
+
 
     private void broadcastUpdate (final String action){
         Intent broadcastIntent =new Intent(action);

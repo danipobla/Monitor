@@ -23,6 +23,11 @@
         </activity>
         <activity android:name=".MonitorActivity" />
 
+        <service
+            android:name=".HRService"
+            android:enabled="true"
+            android:exported="true" />
+
         <receiver android:name=".HRWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -32,11 +37,6 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/hrwidget_info" />
         </receiver>
-
-        <service
-            android:name=".HRService"
-            android:enabled="true"
-            android:exported="true"></service>
     </application>
 
 </manifest>

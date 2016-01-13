@@ -43,6 +43,7 @@ public class CardiacActivity extends AppCompatActivity {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             serviceBinder=null;
+
         }
     };
 
@@ -61,9 +62,18 @@ public class CardiacActivity extends AppCompatActivity {
         tvAddress.setText(mDeviceAddress);
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+    }
+
     public void startService(View view){
-        intent = new Intent(CardiacActivity.this,HRService.class);
-        bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        intent =new Intent(getBaseContext(), HRService.class);
+        intent.putExtra("EXTRAS_DEVICE_ADDRESS",mDeviceAddress);
+        startService(intent);
+
+       // intent = new Intent(CardiacActivity.this,HRService.class);
+        //bindService(intent, connection, Context.BIND_AUTO_CREATE);
 
     }
 
