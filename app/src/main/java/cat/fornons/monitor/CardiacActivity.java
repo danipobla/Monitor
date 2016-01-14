@@ -3,7 +3,6 @@ package cat.fornons.monitor;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
-import android.bluetooth.BluetoothClass;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -19,7 +18,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 
 public class CardiacActivity extends AppCompatActivity {
@@ -27,7 +25,7 @@ public class CardiacActivity extends AppCompatActivity {
     private String mDeviceAddress;
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
-
+    int requestCode =0;
     HRService serviceBinder;
     Intent intent;
     IntentFilter mIntentFilter;
@@ -71,10 +69,6 @@ public class CardiacActivity extends AppCompatActivity {
         intent =new Intent(getBaseContext(), HRService.class);
         intent.putExtra("EXTRAS_DEVICE_ADDRESS",mDeviceAddress);
         startService(intent);
-
-       // intent = new Intent(CardiacActivity.this,HRService.class);
-        //bindService(intent, connection, Context.BIND_AUTO_CREATE);
-
     }
 
     public void stopService(View view)
@@ -116,10 +110,11 @@ public class CardiacActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         switch (item.getItemId()) {
             case R.id.device:
                 final Intent intent = new Intent(this,MonitorActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent,requestCode);
                  return true;
             case R.id.user:
                 //showHelp();
@@ -127,6 +122,15 @@ public class CardiacActivity extends AppCompatActivity {
 
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == requestCode){
+            if (resultCode==RESULT_OK){
+                mDeviceAddress=data.getStringExtra("EXTRAS_DEVICE_ADDRESS");
+            }
         }
     }
 
@@ -138,6 +142,7 @@ public class CardiacActivity extends AppCompatActivity {
                 tvCor.setText(intent.getStringExtra("valor"));
             }
             else if (action.equals("ACTION_GATT_CONNECTED")){
+
 
             }else if(action.equals("ACTION_GATT_DISCONNECTED")){
 

@@ -35,8 +35,6 @@ import java.util.UUID;
 
 public class HRService extends Service {
 
-
-    String mDeviceAddress;
     private BluetoothAdapter mBluetoohAdapter;
     private BluetoothManager mBluetoohManager;
     private BluetoothDevice device;
@@ -45,7 +43,7 @@ public class HRService extends Service {
     private SharedPreferences prefs;
     private final IBinder binder = new mBinder();
 
-   // public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
+    public String mDeviceAddress = null;
 
 
     public class mBinder extends Binder {
@@ -63,13 +61,11 @@ public class HRService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
 
-
         if (mGatt == null) {
             mDeviceAddress= intent.getStringExtra("EXTRAS_DEVICE_ADDRESS");
             mBluetoohManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             mBluetoohAdapter = mBluetoohManager.getAdapter();
             device = mBluetoohAdapter.getRemoteDevice(mDeviceAddress);
-
             mGatt = device.connectGatt(getBaseContext(), false, gattCallback);
 
 
@@ -85,6 +81,7 @@ public class HRService extends Service {
             mGatt.disconnect();
             mGatt = null;
         }
+        nou_valor("");
         Toast.makeText(this, "service Destroyed", Toast.LENGTH_SHORT).show();
 
         super.onDestroy();
@@ -106,8 +103,8 @@ public class HRService extends Service {
                     Log.e("gattCallback", "STATE_DISCONNECTED");
                     if (mGatt !=null){
                         mGatt.discoverServices();
+                        broadcastUpdate("ACTION_GATT_DISCONNECTED");
                     }
-                    broadcastUpdate("ACTION_GATT_DISCONNECTED");
                     break;
                 default:
                     Log.e("gattCallback", "STATE_OTHER");
@@ -138,7 +135,7 @@ public class HRService extends Service {
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            byte[] data = characteristic.getValue();
+           // byte[] data = characteristic.getValue();
         }
 
         @Override
@@ -156,20 +153,19 @@ public class HRService extends Service {
             final int heartRate = characteristic.getIntValue(format, 1);
 
             Log.i("READ", String.format("Received heart rate: %d - %s", heartRate, data.format(new Date())));
-            nou_valor(String.valueOf(heartRate),data.format(new Date()));
+            nou_valor(String.valueOf(heartRate));
 
         }
 
     };
 
-    public void nou_valor( final String valor, final String data){
+    public void nou_valor( final String valor){
         Intent intent = new Intent(this,HRWidget.class);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         int[] ids = AppWidgetManager.getInstance(getApplicationContext()).getAppWidgetIds(new ComponentName(getApplication(),HRWidget.class));
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,ids);
         intent.putExtra("valor",valor);
         sendBroadcast(intent);
-
         broadcastUpdate("ACTION_DATA_AVAILABLE", valor);
 
     }

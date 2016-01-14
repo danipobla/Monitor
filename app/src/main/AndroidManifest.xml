@@ -21,7 +21,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MonitorActivity" />
+        <activity android:name=".MonitorActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"/>
 
         <service
             android:name=".HRService"

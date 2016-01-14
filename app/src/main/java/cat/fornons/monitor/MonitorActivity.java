@@ -9,6 +9,7 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -57,14 +58,10 @@ public class MonitorActivity extends AppCompatActivity {
                 Log.e(LOG_TAG, "Dispositiu seleccionat");
                 final BluetoothDevice device = mBleDeviceListAdapter.getDevice(position);
                 if (device==null) return;
-                if (mScanning){
-                    mBleScanner.stopScan(mScanCallback);
-                }
-                final Intent intent = new Intent(view.getContext(),CardiacActivity.class);
-                intent.putExtra(CardiacActivity.EXTRAS_DEVICE_NAME,device.getName());
-                intent.putExtra(CardiacActivity.EXTRAS_DEVICE_ADDRESS,device.getAddress());
-                startActivity(intent);
-
+                Intent data =new Intent();
+                data.putExtra("EXTRAS_DEVICE_ADDRESS",device.getAddress());
+                setResult(RESULT_OK, data);
+                finish();
             }
         });
 
@@ -139,12 +136,12 @@ public class MonitorActivity extends AppCompatActivity {
         mScanning=false;
     }
 
+
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onDestroy() {
+        super.onDestroy();
         disconnect();
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -152,7 +149,7 @@ public class MonitorActivity extends AppCompatActivity {
             finish();
             return;
         }
-        super.onActivityResult(requestCode, resultCode, data);
+        //super.onActivityResult(requestCode, resultCode, data);
 
     }
 
