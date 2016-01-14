@@ -21,7 +21,7 @@ public class HRMesurent {
     }
 
 
-    public Object setJSON() {
+    public Object getJSON() {
         JSONObject hrm = new JSONObject();
 
         try {

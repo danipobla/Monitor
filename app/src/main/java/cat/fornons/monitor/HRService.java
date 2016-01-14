@@ -21,12 +21,23 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Binder;
+import android.os.Environment;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -35,20 +46,24 @@ import java.util.UUID;
 
 public class HRService extends Service {
 
-
+    HRMesurent mHRMesurement;
     String mDeviceAddress;
     private BluetoothAdapter mBluetoohAdapter;
     private BluetoothManager mBluetoohManager;
     private BluetoothDevice device;
     private BluetoothGatt mGatt = null;
     private BluetoothGattCharacteristic characteristic;
+    OutputStreamWriter osw;
+    InputStreamReader isr;
+    File file;
+
     private final IBinder binder = new mBinder();
 
-   // public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
+    // public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
 
     public class mBinder extends Binder {
-        HRService getService(){
+        HRService getService() {
             return HRService.this;
         }
     }
@@ -64,14 +79,22 @@ public class HRService extends Service {
 
 
         if (mGatt == null) {
-            mDeviceAddress= intent.getStringExtra("EXTRAS_DEVICE_ADDRESS");
+            mHRMesurement = new HRMesurent();
+            mDeviceAddress = intent.getStringExtra("EXTRAS_DEVICE_ADDRESS");
             mBluetoohManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             mBluetoohAdapter = mBluetoohManager.getAdapter();
             device = mBluetoohAdapter.getRemoteDevice(mDeviceAddress);
-
             mGatt = device.connectGatt(getBaseContext(), false, gattCallback);
-
-
+            try {
+                File sdCard = Environment.getExternalStorageDirectory();
+                File directory = new File (sdCard.getAbsolutePath()+ "/Monitor");
+                directory.mkdirs();
+                file = new File (directory,"monitor.txt");
+                FileOutputStream fOut = new FileOutputStream(file);
+                osw = new OutputStreamWriter(fOut);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
         }
 
         return START_REDELIVER_INTENT;
@@ -80,11 +103,30 @@ public class HRService extends Service {
 
     @Override
     public void onDestroy() {
-        if (mGatt!=null) {
+        if (mGatt != null) {
             mGatt.disconnect();
             mGatt = null;
+            try {
+                osw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         Toast.makeText(this, "service Destroyed", Toast.LENGTH_SHORT).show();
+        try {
+            FileInputStream fIn = new FileInputStream(file);
+            isr= new InputStreamReader(fIn);
+            BufferedReader reader = new BufferedReader(isr);
+            String line =reader.readLine();
+            while (line != null){
+                Log.i("READ", line);
+                line =reader.readLine();
+            }
+            } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         super.onDestroy();
     }
@@ -103,7 +145,7 @@ public class HRService extends Service {
                     break;
                 case BluetoothProfile.STATE_DISCONNECTED:
                     Log.e("gattCallback", "STATE_DISCONNECTED");
-                    if (mGatt !=null){
+                    if (mGatt != null) {
                         mGatt.discoverServices();
                     }
                     broadcastUpdate("ACTION_GATT_DISCONNECTED");
@@ -120,7 +162,7 @@ public class HRService extends Service {
             List<BluetoothGattService> services = gatt.getServices();
 
             for (BluetoothGattService service : services) {
-                if (service.getUuid().equals(UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb"))){
+                if (service.getUuid().equals(UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb"))) {
                     characteristic = service.getCharacteristic(UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb"));
 
                     gatt.readCharacteristic(characteristic);
@@ -155,35 +197,44 @@ public class HRService extends Service {
             final int heartRate = characteristic.getIntValue(format, 1);
 
             Log.i("READ", String.format("Received heart rate: %d - %s", heartRate, data.format(new Date())));
-            nou_valor(String.valueOf(heartRate),data.format(new Date()));
+            nou_valor(String.valueOf(heartRate), data.format(new Date()));
 
         }
 
     };
 
-    public void nou_valor( final String valor, final String data){
-        Intent intent = new Intent(this,HRWidget.class);
+    public void nou_valor(final String valor, final String data) {
+        mHRMesurement.setHRM(valor, data);
+        Intent intent = new Intent(this, HRWidget.class);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-        int[] ids = AppWidgetManager.getInstance(getApplicationContext()).getAppWidgetIds(new ComponentName(getApplication(),HRWidget.class));
-        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,ids);
-        intent.putExtra("valor",valor);
+        int[] ids = AppWidgetManager.getInstance(getApplicationContext()).getAppWidgetIds(new ComponentName(getApplication(), HRWidget.class));
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+        intent.putExtra("valor", valor);
         sendBroadcast(intent);
-
         broadcastUpdate("ACTION_DATA_AVAILABLE", valor);
 
+        try {
+            osw.write(mHRMesurement.getJSON().toString()+System.getProperty("line.separator"));
+            osw.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Log.i("JSON",mHRMesurement.getJSON().toString());
     }
 
 
-
-    private void broadcastUpdate (final String action){
-        Intent broadcastIntent =new Intent(action);
+    private void broadcastUpdate(final String action) {
+        Intent broadcastIntent = new Intent(action);
         sendBroadcast(broadcastIntent);
 
     }
 
-    private void broadcastUpdate (final String action, String valor){
-        Intent broadcastIntent =new Intent(action);
-        broadcastIntent.putExtra("valor",valor);
+    private void broadcastUpdate(final String action, String valor) {
+        Intent broadcastIntent = new Intent(action);
+        broadcastIntent.putExtra("valor", valor);
         sendBroadcast(broadcastIntent);
     }
+
+
 }
