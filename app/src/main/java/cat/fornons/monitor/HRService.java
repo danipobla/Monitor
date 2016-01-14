@@ -42,7 +42,6 @@ public class HRService extends Service {
     private BluetoothDevice device;
     private BluetoothGatt mGatt = null;
     private BluetoothGattCharacteristic characteristic;
-    private SharedPreferences prefs;
     private final IBinder binder = new mBinder();
 
    // public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";

@@ -72,9 +72,6 @@ public class CardiacActivity extends AppCompatActivity {
         intent.putExtra("EXTRAS_DEVICE_ADDRESS",mDeviceAddress);
         startService(intent);
 
-       // intent = new Intent(CardiacActivity.this,HRService.class);
-        //bindService(intent, connection, Context.BIND_AUTO_CREATE);
-
     }
 
     public void stopService(View view)
@@ -118,11 +115,12 @@ public class CardiacActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.device:
-                final Intent intent = new Intent(this,MonitorActivity.class);
+                intent = new Intent(this,MonitorActivity.class);
                 startActivity(intent);
                  return true;
             case R.id.user:
-                //showHelp();
+                intent = new Intent(this,UserActivity.class);
+                startActivity(intent);
                 return true;
 
             default:
