@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Shader;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -30,13 +31,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 
 
 public class CardiacActivity extends AppCompatActivity {
@@ -97,46 +105,7 @@ public class CardiacActivity extends AppCompatActivity {
     }
 
     public void  sendLog(View view) {
-        JSONObject hrm = new JSONObject();
-
-
-        try {
-            SharedPreferences userPrefs = getSharedPreferences("cat.fornons.UsingPreferences_preferences", MODE_PRIVATE);
-            hrm.put("name",userPrefs.getString("name", "--"));
-            hrm.put("age", userPrefs.getString("age", "--"));
-            hrm.put("height", userPrefs.getString("name", "--"));
-            hrm.put("weight", userPrefs.getString("name", "--"));
-
-
-            JSONArray jsonArray = new JSONArray();
-
-            File sdCard = Environment.getExternalStorageDirectory();
-            File file = new File (sdCard.getAbsolutePath()+ "/Monitor/monitor.txt");
-            FileInputStream fIn = new FileInputStream(file);
-            InputStreamReader isr= new InputStreamReader(fIn);
-            BufferedReader reader = new BufferedReader(isr);
-            String line =reader.readLine();
-            while (line != null){
-                jsonArray.put(new JSONObject(line));
-                line=reader.readLine();
-              }
-            hrm.put("hrm",jsonArray);
-            File directory = new File (sdCard.getAbsolutePath()+ "/Monitor");
-            file = new File (directory,"json.txt");
-            FileOutputStream fOut = new FileOutputStream(file);
-            OutputStreamWriter osw = new OutputStreamWriter(fOut);
-            osw.write(hrm.toString());
-            osw.flush();
-            osw.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        new SendJsonServer().execute();
 
     }
 
@@ -228,6 +197,81 @@ public class CardiacActivity extends AppCompatActivity {
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 // mId allows you to update the notification later on.
-        mNotificationManager.notify(1524, mBuilder.build());}
+        mNotificationManager.notify(1524, mBuilder.build());
+    }
+
+    private class SendJsonServer extends AsyncTask <String,Void,String>{
+
+        @Override
+        protected String doInBackground(String... params) {
+            JSONObject hrm = new JSONObject();
+
+
+            try {
+                SharedPreferences userPrefs = getSharedPreferences("cat.fornons.UsingPreferences_preferences", MODE_PRIVATE);
+                hrm.put("name",userPrefs.getString("name", "--"));
+                hrm.put("age", userPrefs.getString("age", "--"));
+                hrm.put("height", userPrefs.getString("name", "--"));
+                hrm.put("weight", userPrefs.getString("name", "--"));
+
+
+                JSONArray jsonArray = new JSONArray();
+
+                File sdCard = Environment.getExternalStorageDirectory();
+                File file = new File (sdCard.getAbsolutePath()+ "/Monitor/monitor.txt");
+                FileInputStream fIn = new FileInputStream(file);
+                InputStreamReader isr= new InputStreamReader(fIn);
+                BufferedReader reader = new BufferedReader(isr);
+                String line =reader.readLine();
+                while (line != null) {
+                    jsonArray.put(new JSONObject(line));
+                    line = reader.readLine();
+                    hrm.put("hrm", jsonArray);
+                }
+                File directory = new File (sdCard.getAbsolutePath()+ "/Monitor");
+                file = new File (directory,"json.txt");
+                FileOutputStream fOut = new FileOutputStream(file);
+                OutputStreamWriter osw = new OutputStreamWriter(fOut);
+                osw.write(hrm.toString());
+                osw.flush();
+                osw.close();
+                URL url = new URL("http://www.fornons.sytes.net:1234");
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setDoOutput(true);
+                // is output buffer writter
+                urlConnection.setRequestMethod("POST");
+                urlConnection.setRequestProperty("Content-Type", "application/json");
+                urlConnection.setRequestProperty("Accept", "application/json");
+               // Writer writer = new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), "UTF-8"));
+                OutputStreamWriter writer = new OutputStreamWriter(urlConnection.getOutputStream());
+             //   BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+
+                writer.write(String.valueOf(hrm));
+                writer.close();
+
+                InputStream inputStream = urlConnection.getInputStream();
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                }
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String inputLine;
+                while ((inputLine = reader.readLine()) != null)
+                    buffer.append(inputLine + "\n");
+                if (buffer.length() == 0) {
+                    // Stream was empty. No point in parsing.
+                    return null;
+                }
+                String JsonResponse = buffer.toString();
+                Log.i("TAG",JsonResponse);
+                return JsonResponse;
+
+            }
+           catch (Exception e){
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
 }
 
