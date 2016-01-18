@@ -51,4 +51,13 @@
         android:layout_alignParentEnd="true"
         android:onClick="stopService" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SEND"
+        android:id="@+id/btSend"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:onClick="sendLog" />
+
 </RelativeLayout>

@@ -80,14 +80,13 @@ public class HRService extends Service {
                 File sdCard = Environment.getExternalStorageDirectory();
                 File directory = new File (sdCard.getAbsolutePath()+ "/Monitor");
                 directory.mkdirs();
-                file = new File (directory,data.format(new Date())+".txt");
+                file = new File (directory,"monitor.txt");
                 FileOutputStream fOut = new FileOutputStream(file);
                 osw = new OutputStreamWriter(fOut);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
         }
-
         return START_REDELIVER_INTENT;
     }
 
@@ -204,7 +203,7 @@ public class HRService extends Service {
         broadcastUpdate("ACTION_DATA_AVAILABLE", valor);
 
         try {
-            osw.write(mHRMesurement.getJSON().toString()+System.getProperty("line.separator"));
+            osw.write(mHRMesurement.getJSON()+System.getProperty("line.separator"));
             osw.flush();
         } catch (IOException e) {
             e.printStackTrace();

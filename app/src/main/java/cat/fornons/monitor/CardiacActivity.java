@@ -10,16 +10,33 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
+import android.graphics.Shader;
+import android.os.Environment;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 
 public class CardiacActivity extends AppCompatActivity {
@@ -79,6 +96,50 @@ public class CardiacActivity extends AppCompatActivity {
         stopService(new Intent(getBaseContext(), HRService.class));
     }
 
+    public void  sendLog(View view) {
+        JSONObject hrm = new JSONObject();
+
+
+        try {
+            SharedPreferences userPrefs = getSharedPreferences("cat.fornons.UsingPreferences_preferences", MODE_PRIVATE);
+            hrm.put("name",userPrefs.getString("name", "--"));
+            hrm.put("age", userPrefs.getString("age", "--"));
+            hrm.put("height", userPrefs.getString("name", "--"));
+            hrm.put("weight", userPrefs.getString("name", "--"));
+
+
+            JSONArray jsonArray = new JSONArray();
+
+            File sdCard = Environment.getExternalStorageDirectory();
+            File file = new File (sdCard.getAbsolutePath()+ "/Monitor/monitor.txt");
+            FileInputStream fIn = new FileInputStream(file);
+            InputStreamReader isr= new InputStreamReader(fIn);
+            BufferedReader reader = new BufferedReader(isr);
+            String line =reader.readLine();
+            while (line != null){
+                jsonArray.put(new JSONObject(line));
+                line=reader.readLine();
+              }
+            hrm.put("hrm",jsonArray);
+            File directory = new File (sdCard.getAbsolutePath()+ "/Monitor");
+            file = new File (directory,"json.txt");
+            FileOutputStream fOut = new FileOutputStream(file);
+            OutputStreamWriter osw = new OutputStreamWriter(fOut);
+            osw.write(hrm.toString());
+            osw.flush();
+            osw.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
 
     @Override
     protected void onResume() {
@@ -136,8 +197,9 @@ public class CardiacActivity extends AppCompatActivity {
                 tvCor.setText(intent.getStringExtra("valor"));
             }
             else if (action.equals("ACTION_GATT_CONNECTED")){
-
+                notificacio(action.toString());
             }else if(action.equals("ACTION_GATT_DISCONNECTED")){
+                notificacio(action.toString());
 
             }else if(action.equals("ACTION_SERVICE_DISCOVERED")){
 
@@ -149,7 +211,7 @@ public class CardiacActivity extends AppCompatActivity {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_favorite_24dp)
-                        .setContentTitle("My notification")
+                        .setContentTitle("Monitor")
                         .setContentText(valor);
         Intent resultIntent = new Intent(this, CardiacActivity.class);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
@@ -167,8 +229,5 @@ public class CardiacActivity extends AppCompatActivity {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 // mId allows you to update the notification later on.
         mNotificationManager.notify(1524, mBuilder.build());}
-
-
-
 }
 

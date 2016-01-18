@@ -4,19 +4,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class HRMesurent {
-    String data;
+    String date;
     String hr;
-    String estat;
-    String intensitat;
-    String comentari;
+    String state;
+    String intensity;
+    String comment;
     int size;
 
     public HRMesurent(){
-        this.data="";
+        this.date="";
         this.hr="";
-        this.estat="";
-        this.intensitat="";
-        this.comentari="";
+        this.state ="";
+        this.intensity ="";
+        this.comment ="";
         this.size=0;
     }
 
@@ -25,13 +25,13 @@ public class HRMesurent {
         JSONObject hrm = new JSONObject();
 
         try {
-            hrm.put("data", data);
+            hrm.put("date", date);
             hrm.put("hr", hr);
-            hrm.put("estat", estat);
-            hrm.put("intensitat", intensitat);
-            hrm.put("comentari", comentari);
+            hrm.put("state", state);
+            hrm.put("intensity", intensity);
+            hrm.put("comment", comment);
 
-        } catch (JSONException e) {
+        } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
@@ -40,7 +40,7 @@ public class HRMesurent {
 
     public void setHRM(String valor, String data) {
         this.size = this.size++;
-        this.data=data;
+        this.date =data;
         this.hr=valor;
     }
 }
