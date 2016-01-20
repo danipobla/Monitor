@@ -30,6 +30,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -205,7 +207,8 @@ public class CardiacActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
             JSONObject hrm = new JSONObject();
-
+            HttpURLConnection urlConnection = null;
+            byte[] data;
 
             try {
                 SharedPreferences userPrefs = getSharedPreferences("cat.fornons.UsingPreferences_preferences", MODE_PRIVATE);
@@ -226,52 +229,59 @@ public class CardiacActivity extends AppCompatActivity {
                 while (line != null) {
                     jsonArray.put(new JSONObject(line));
                     line = reader.readLine();
-                    hrm.put("hrm", jsonArray);
+
                 }
-                File directory = new File (sdCard.getAbsolutePath()+ "/Monitor");
-                file = new File (directory,"json.txt");
-                FileOutputStream fOut = new FileOutputStream(file);
-                OutputStreamWriter osw = new OutputStreamWriter(fOut);
-                osw.write(hrm.toString());
-                osw.flush();
-                osw.close();
-                URL url = new URL("http://www.fornons.sytes.net:1234");
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                hrm.put("hrm", jsonArray);
+
+                data = hrm.toString().getBytes();
+                //Enviem POST
+                URL url = new URL("http://fornons.sytes.net:1234");
+                urlConnection = (HttpURLConnection) url.openConnection();
+
                 urlConnection.setDoOutput(true);
-                // is output buffer writter
-                urlConnection.setRequestMethod("POST");
-                urlConnection.setRequestProperty("Content-Type", "application/json");
-                urlConnection.setRequestProperty("Accept", "application/json");
-               // Writer writer = new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), "UTF-8"));
-                OutputStreamWriter writer = new OutputStreamWriter(urlConnection.getOutputStream());
-             //   BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                urlConnection.setFixedLengthStreamingMode(data.length);
 
-                writer.write(String.valueOf(hrm));
-                writer.close();
+                OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
+                writeStream(out, data);
 
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
 
-                String inputLine;
-                while ((inputLine = reader.readLine()) != null)
-                    buffer.append(inputLine + "\n");
-                if (buffer.length() == 0) {
-                    // Stream was empty. No point in parsing.
-                    return null;
-                }
-                String JsonResponse = buffer.toString();
-                Log.i("TAG",JsonResponse);
-                return JsonResponse;
+                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                readStream(in);
 
             }
            catch (Exception e){
                 e.printStackTrace();
             }
+            finally{
+                urlConnection.disconnect();
+            }
             return null;
         }
+    }
+
+
+    private String writeStream(OutputStream out, byte[] hrm){
+        try {
+            out.write(hrm);
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private String readStream(InputStream in){
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        StringBuilder result = new StringBuilder();
+        String line;
+        try {
+            while((line = reader.readLine()) != null) {
+                result.append(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result.toString();
     }
 }
 
