@@ -45,7 +45,7 @@ public class HRService extends Service {
     OutputStreamWriter osw;
     InputStreamReader isr;
     File file;
-    SimpleDateFormat data = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS", Locale.getDefault());
+    SimpleDateFormat data = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss'Z'", Locale.getDefault());
 
 
     private final IBinder binder = new mBinder();

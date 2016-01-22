@@ -214,8 +214,8 @@ public class CardiacActivity extends AppCompatActivity {
                 SharedPreferences userPrefs = getSharedPreferences("cat.fornons.UsingPreferences_preferences", MODE_PRIVATE);
                 hrm.put("name",userPrefs.getString("name", "--"));
                 hrm.put("age", userPrefs.getString("age", "--"));
-                hrm.put("height", userPrefs.getString("name", "--"));
-                hrm.put("weight", userPrefs.getString("name", "--"));
+                hrm.put("height", userPrefs.getString("height", "--"));
+                hrm.put("weight", userPrefs.getString("weight", "--"));
 
 
                 JSONArray jsonArray = new JSONArray();
@@ -235,7 +235,7 @@ public class CardiacActivity extends AppCompatActivity {
 
                 data = hrm.toString().getBytes();
                 //Enviem POST
-                URL url = new URL("http://fornons.sytes.net:1234");
+                URL url = new URL("http://fornons.sytes.net:1234/dades/");
                 urlConnection = (HttpURLConnection) url.openConnection();
 
                 urlConnection.setDoOutput(true);
@@ -284,4 +284,5 @@ public class CardiacActivity extends AppCompatActivity {
         return result.toString();
     }
 }
+
 
