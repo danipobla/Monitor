@@ -246,8 +246,7 @@ public class CardiacActivity extends AppCompatActivity {
 
 
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                readStream(in);
-
+                return readStream(in);
             }
            catch (Exception e){
                 e.printStackTrace();
@@ -257,6 +256,11 @@ public class CardiacActivity extends AppCompatActivity {
             }
             return null;
         }
+        protected void onPostExecute(String result) {
+            Toast.makeText(getApplicationContext(),result , Toast.LENGTH_SHORT).show();
+            Log.i("Insert", result);
+        }
+
     }
 
 
