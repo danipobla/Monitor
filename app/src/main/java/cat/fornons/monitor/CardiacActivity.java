@@ -168,9 +168,9 @@ public class CardiacActivity extends AppCompatActivity {
                 tvCor.setText(intent.getStringExtra("valor"));
             }
             else if (action.equals("ACTION_GATT_CONNECTED")){
-                notificacio(action.toString());
+   //             notificacio(action.toString());
             }else if(action.equals("ACTION_GATT_DISCONNECTED")){
-                notificacio(action.toString());
+   //             notificacio(action.toString());
 
             }else if(action.equals("ACTION_SERVICE_DISCOVERED")){
 
@@ -178,29 +178,7 @@ public class CardiacActivity extends AppCompatActivity {
         }
     };
 
-    private void notificacio(String valor) {
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_favorite_24dp)
-                        .setContentTitle("Monitor")
-                        .setContentText(valor);
-        Intent resultIntent = new Intent(this, CardiacActivity.class);
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-// Adds the back stack for the Intent (but not the Intent itself)
-        stackBuilder.addParentStack(CardiacActivity.class);
-// Adds the Intent that starts the Activity to the top of the stack
-        stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(
-                        0,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                );
-        mBuilder.setContentIntent(resultPendingIntent);
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-// mId allows you to update the notification later on.
-        mNotificationManager.notify(1524, mBuilder.build());
-    }
+
 
     private class SendJsonServer extends AsyncTask <String,Void,String>{
 

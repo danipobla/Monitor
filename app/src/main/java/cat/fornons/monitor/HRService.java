@@ -1,6 +1,10 @@
 package cat.fornons.monitor;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.app.TaskStackBuilder;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -14,9 +18,13 @@ import android.bluetooth.BluetoothProfile;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
+import android.provider.SyncStateContract;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 import java.io.BufferedReader;
@@ -78,15 +86,38 @@ public class HRService extends Service {
             mGatt = device.connectGatt(getBaseContext(), false, gattCallback);
             try {
                 File sdCard = Environment.getExternalStorageDirectory();
-                File directory = new File (sdCard.getAbsolutePath()+ "/Monitor");
+                File directory = new File(sdCard.getAbsolutePath() + "/Monitor");
                 directory.mkdirs();
-                file = new File (directory,"monitor.txt");
+                file = new File(directory, "monitor.txt");
                 FileOutputStream fOut = new FileOutputStream(file);
                 osw = new OutputStreamWriter(fOut);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
         }
+
+
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_favorite_24dp)
+                        .setContentTitle("Monitor")
+                        .setContentText("ALGO");
+        Intent resultIntent = new Intent(this, CardiacActivity.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+// Adds the back stack for the Intent (but not the Intent itself)
+        stackBuilder.addParentStack(CardiacActivity.class);
+// Adds the Intent that starts the Activity to the top of the stack
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(
+                        0,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        mBuilder.setContentIntent(resultPendingIntent);
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+// mId allows you to update the notification later on.
+        startForeground(1524, mBuilder.build());
         return START_REDELIVER_INTENT;
     }
 
