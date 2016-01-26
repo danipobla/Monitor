@@ -181,6 +181,7 @@ public class HRService extends Service implements SensorEventListener {
                 lastUpdate = curTime;
 
                 float speed = Math.abs(x + y + z - last_x - last_y - last_z)/ diffTime * 10000;
+                mHRMesurement.setIntensity(String.valueOf(speed));
                 Log.i("SENSOR", String.valueOf(speed));
 
                 //if (speed > SHAKE_THRESHOLD) {

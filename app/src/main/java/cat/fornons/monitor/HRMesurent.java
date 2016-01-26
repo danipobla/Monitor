@@ -43,4 +43,8 @@ public class HRMesurent {
         this.date =data;
         this.hr=valor;
     }
+
+    public void setIntensity(String intensity) {
+        this.intensity = intensity;
+    }
 }
