@@ -120,7 +120,7 @@ public class CardiacActivity extends AppCompatActivity {
         mIntentFilter.addAction("ACTION_GATT_DISCONNECTED");
         mIntentFilter.addAction("ACTION_SERVICES_DISCOVERED");
         mIntentFilter.addAction("ACTION_DATA_AVAILABLE");
-        registerReceiver(intentReceiver,mIntentFilter);
+        registerReceiver(intentReceiver, mIntentFilter);
     }
 
     @Override
@@ -234,6 +234,11 @@ public class CardiacActivity extends AppCompatActivity {
             }
             return null;
         }
+        protected void onProgressUpdate(Integer... progress) {
+          //  setProgressPercent(progress[0]);
+        }
+
+
         protected void onPostExecute(String result) {
             Toast.makeText(getApplicationContext(),result , Toast.LENGTH_SHORT).show();
             Log.i("Insert", result);

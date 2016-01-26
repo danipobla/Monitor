@@ -20,6 +20,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
@@ -41,7 +45,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-public class HRService extends Service {
+public class HRService extends Service implements SensorEventListener {
 
     HRMesurent mHRMesurement;
     String mDeviceAddress;
@@ -54,6 +58,11 @@ public class HRService extends Service {
     InputStreamReader isr;
     File file;
     SimpleDateFormat data = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss'Z'", Locale.getDefault());
+    private SensorManager mSensorManager;
+    private Sensor mSensor;
+    long lastUpdate;
+    float last_x,last_y,last_z;
+
 
 
     private final IBinder binder = new mBinder();
@@ -94,6 +103,9 @@ public class HRService extends Service {
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
+            mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+            mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            mSensorManager.registerListener(this,mSensor,SensorManager.SENSOR_DELAY_NORMAL );
         }
 
 
@@ -152,6 +164,39 @@ public class HRService extends Service {
         super.onDestroy();
     }
 
+    public void onSensorChanged(SensorEvent event){
+        float x,y,z;
+
+        if (event.sensor.getType()==Sensor.TYPE_ACCELEROMETER){
+
+            x=(event.values[0]);
+            y=(event.values[1]);
+            z=(event.values[2]);
+
+
+            long curTime = System.currentTimeMillis();
+
+            if ((curTime - lastUpdate) > 1000) {
+                long diffTime = (curTime - lastUpdate);
+                lastUpdate = curTime;
+
+                float speed = Math.abs(x + y + z - last_x - last_y - last_z)/ diffTime * 10000;
+                Log.i("SENSOR", String.valueOf(speed));
+
+                //if (speed > SHAKE_THRESHOLD) {
+
+                }//
+                last_x = x;
+                last_y = y;
+                last_z = z;
+            }
+        }
+
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
 
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
@@ -240,7 +285,7 @@ public class HRService extends Service {
             e.printStackTrace();
         }
 
-        Log.i("JSON",mHRMesurement.getJSON().toString());
+        Log.i("JSON", mHRMesurement.getJSON().toString());
     }
 
 
