@@ -24,6 +24,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,6 +56,7 @@ public class CardiacActivity extends AppCompatActivity {
     private TextView tvAddress,tvCor;
     private ImageView ivparat,ivbaix,ivmitja,ivalt;
     private String mDeviceAddress;
+    private EditText etComment;
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
     private int PARAT=1;
@@ -93,6 +95,7 @@ public class CardiacActivity extends AppCompatActivity {
         ivbaix=(ImageView)findViewById(R.id.ivbaix);
         ivmitja=(ImageView)findViewById(R.id.ivmitja);
         ivalt=(ImageView)findViewById(R.id.ivalt);
+        etComment=(EditText) findViewById(R.id.etComment);
 
         mDeviceAddress = getIntent().getStringExtra(EXTRAS_DEVICE_ADDRESS);
 
@@ -114,6 +117,13 @@ public class CardiacActivity extends AppCompatActivity {
     public void stopService(View view)
     {
         stopService(new Intent(getBaseContext(), HRService.class));
+    }
+
+    public void saveComment(View view){
+        intent =new Intent(getBaseContext(), HRService.class);
+        intent.putExtra("COMMENT",etComment.getText().toString());
+        startService(intent);
+        etComment.setText("");
     }
 
     public void  sendLog(View view) {
@@ -199,7 +209,6 @@ public class CardiacActivity extends AppCompatActivity {
                     ivmitja.setBackgroundColor(Color.TRANSPARENT);
                     ivalt.setBackgroundColor(Color.RED);
                 }
-
             }
             else if (action.equals("ACTION_GATT_CONNECTED")){
    //             notificacio(action.toString());
