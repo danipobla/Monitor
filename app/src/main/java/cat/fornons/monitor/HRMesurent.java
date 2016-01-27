@@ -9,7 +9,7 @@ public class HRMesurent {
     String state;
     String intensity;
     String comment;
-    int size;
+    int temp,num;
 
     public HRMesurent(){
         this.date="";
@@ -17,11 +17,12 @@ public class HRMesurent {
         this.state ="";
         this.intensity ="";
         this.comment ="";
-        this.size=0;
+        this.temp=0;
+        this.num=0;
     }
 
 
-    public Object getJSON() {
+    public JSONObject getJSON() {
         JSONObject hrm = new JSONObject();
 
         try {
@@ -39,12 +40,23 @@ public class HRMesurent {
     }
 
     public void setHRM(String valor, String data) {
-        this.size = this.size++;
         this.date =data;
         this.hr=valor;
     }
 
     public void setIntensity(String intensity) {
         this.intensity = intensity;
+    }
+
+    public void setTemp(Integer temp) {
+        this.temp=this.temp+temp;
+        this.num++;
+    }
+
+    public int getTemp() {
+        Integer valor = this.temp/this.num;
+        this.temp=0;
+        this.num=0;
+        return valor;
     }
 }

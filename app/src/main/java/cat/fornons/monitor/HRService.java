@@ -31,6 +31,10 @@ import android.provider.SyncStateContract;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -105,7 +109,8 @@ public class HRService extends Service implements SensorEventListener {
             }
             mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
             mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-            mSensorManager.registerListener(this,mSensor,SensorManager.SENSOR_DELAY_NORMAL );
+            mSensorManager.registerListener(this,mSensor,SensorManager.SENSOR_DELAY_FASTEST );
+
         }
 
 
@@ -134,11 +139,13 @@ public class HRService extends Service implements SensorEventListener {
     }
 
 
+
     @Override
     public void onDestroy() {
         if (mGatt != null) {
             mGatt.disconnect();
             mGatt = null;
+            mSensorManager.unregisterListener(this,mSensor);
             try {
                 osw.close();
             } catch (IOException e) {
@@ -168,30 +175,14 @@ public class HRService extends Service implements SensorEventListener {
         float x,y,z;
 
         if (event.sensor.getType()==Sensor.TYPE_ACCELEROMETER){
-
             x=(event.values[0]);
             y=(event.values[1]);
             z=(event.values[2]);
-
-
-            long curTime = System.currentTimeMillis();
-
-            if ((curTime - lastUpdate) > 1000) {
-                long diffTime = (curTime - lastUpdate);
-                lastUpdate = curTime;
-
-                float speed = Math.abs(x + y + z - last_x - last_y - last_z)/ diffTime * 10000;
-                mHRMesurement.setIntensity(String.valueOf(speed));
-                Log.i("SENSOR", String.valueOf(speed));
-
-                //if (speed > SHAKE_THRESHOLD) {
-
-                }//
-                last_x = x;
-                last_y = y;
-                last_z = z;
-            }
+            long speed = Math.round(Math.abs(Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)) - 10));
+            mHRMesurement.setTemp((int) speed);
+            Log.i("SENSOR", String.valueOf(speed));
         }
+    }
 
 
     @Override
@@ -271,18 +262,23 @@ public class HRService extends Service implements SensorEventListener {
 
     public void nou_valor(final String valor, final String data) {
         mHRMesurement.setHRM(valor, data);
+        mHRMesurement.setIntensity(String.valueOf(mHRMesurement.getTemp()));
+
         Intent intent = new Intent(this, HRWidget.class);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         int[] ids = AppWidgetManager.getInstance(getApplicationContext()).getAppWidgetIds(new ComponentName(getApplication(), HRWidget.class));
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
         intent.putExtra("valor", valor);
         sendBroadcast(intent);
-        broadcastUpdate("ACTION_DATA_AVAILABLE", valor);
-
         try {
-            osw.write(mHRMesurement.getJSON()+System.getProperty("line.separator"));
+           JSONObject nou = mHRMesurement.getJSON();
+            osw.write(nou+System.getProperty("line.separator"));
             osw.flush();
+            String b = nou.getString("intensity");
+            broadcastUpdate("ACTION_DATA_AVAILABLE", nou.getString("hr"),b );
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
@@ -296,9 +292,10 @@ public class HRService extends Service implements SensorEventListener {
 
     }
 
-    private void broadcastUpdate(final String action, String valor) {
+    private void broadcastUpdate(final String action, String valor, String intensity) {
         Intent broadcastIntent = new Intent(action);
         broadcastIntent.putExtra("valor", valor);
+        broadcastIntent.putExtra("intensity", intensity);
         sendBroadcast(broadcastIntent);
     }
 

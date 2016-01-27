@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.Shader;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -23,6 +24,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,10 +53,13 @@ import java.net.URLConnection;
 
 public class CardiacActivity extends AppCompatActivity {
     private TextView tvAddress,tvCor;
+    private ImageView ivparat,ivbaix,ivmitja,ivalt;
     private String mDeviceAddress;
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
-
+    private int PARAT=1;
+    private int CAMINANT=3;
+    private int CORRENT=8;
     HRService serviceBinder;
     Intent intent;
     IntentFilter mIntentFilter;
@@ -83,6 +88,11 @@ public class CardiacActivity extends AppCompatActivity {
 
         tvAddress= (TextView) findViewById(R.id.tvAddress);
         tvCor = (TextView) findViewById(R.id.tvCor);
+
+        ivparat=(ImageView)findViewById(R.id.ivparat);
+        ivbaix=(ImageView)findViewById(R.id.ivbaix);
+        ivmitja=(ImageView)findViewById(R.id.ivmitja);
+        ivalt=(ImageView)findViewById(R.id.ivalt);
 
         mDeviceAddress = getIntent().getStringExtra(EXTRAS_DEVICE_ADDRESS);
 
@@ -160,12 +170,36 @@ public class CardiacActivity extends AppCompatActivity {
         }
     }
 
-    public BroadcastReceiver intentReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver intentReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action= intent.getAction();
             if (action.equals("ACTION_DATA_AVAILABLE")){
                 tvCor.setText(intent.getStringExtra("valor"));
+                int valor= Integer.parseInt(intent.getStringExtra("intensity"));
+                if (valor<PARAT) {
+                    ivparat.setBackgroundColor(Color.RED);
+                    ivbaix.setBackgroundColor(Color.TRANSPARENT);
+                    ivmitja.setBackgroundColor(Color.TRANSPARENT);
+                    ivalt.setBackgroundColor(Color.TRANSPARENT);
+                }else if (valor< CAMINANT){
+                    ivparat.setBackgroundColor(Color.TRANSPARENT);
+                    ivbaix.setBackgroundColor(Color.RED);
+                    ivmitja.setBackgroundColor(Color.TRANSPARENT);
+                    ivalt.setBackgroundColor(Color.TRANSPARENT);
+
+                }else if (valor <CORRENT){
+                    ivparat.setBackgroundColor(Color.TRANSPARENT);
+                    ivbaix.setBackgroundColor(Color.TRANSPARENT);
+                    ivmitja.setBackgroundColor(Color.RED);
+                    ivalt.setBackgroundColor(Color.TRANSPARENT);
+                }else{
+                    ivparat.setBackgroundColor(Color.TRANSPARENT);
+                    ivbaix.setBackgroundColor(Color.TRANSPARENT);
+                    ivmitja.setBackgroundColor(Color.TRANSPARENT);
+                    ivalt.setBackgroundColor(Color.RED);
+                }
+
             }
             else if (action.equals("ACTION_GATT_CONNECTED")){
    //             notificacio(action.toString());
