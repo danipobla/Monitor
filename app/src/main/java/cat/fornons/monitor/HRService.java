@@ -1,6 +1,5 @@
 package cat.fornons.monitor;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -18,8 +17,6 @@ import android.bluetooth.BluetoothProfile;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -27,7 +24,6 @@ import android.hardware.SensorManager;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
-import android.provider.SyncStateContract;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
@@ -64,9 +60,9 @@ public class HRService extends Service implements SensorEventListener {
     SimpleDateFormat data = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss'Z'", Locale.getDefault());
     private SensorManager mSensorManager;
     private Sensor mSensor;
-    long lastUpdate;
-    float last_x,last_y,last_z;
-
+    NotificationCompat.Builder mBuilder;
+    NotificationManager mNotificationManager;
+    Integer NOTIFICATION_ID=1234;
 
 
     private final IBinder binder = new mBinder();
@@ -114,11 +110,10 @@ public class HRService extends Service implements SensorEventListener {
         }
 
 
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
+        mBuilder = new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_favorite_24dp)
-                        .setContentTitle("Monitor")
-                        .setContentText("ALGO");
+                        .setContentTitle("Monitor cardíac")
+                        .setContentText("Ritme Cardíac");
         Intent resultIntent = new Intent(this, CardiacActivity.class);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
 // Adds the back stack for the Intent (but not the Intent itself)
@@ -131,10 +126,9 @@ public class HRService extends Service implements SensorEventListener {
                         PendingIntent.FLAG_UPDATE_CURRENT
                 );
         mBuilder.setContentIntent(resultPendingIntent);
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager =(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 // mId allows you to update the notification later on.
-        startForeground(1524, mBuilder.build());
+        startForeground(NOTIFICATION_ID, mBuilder.build());
         return START_REDELIVER_INTENT;
     }
 
@@ -180,7 +174,6 @@ public class HRService extends Service implements SensorEventListener {
             z=(event.values[2]);
             long speed = Math.round(Math.abs(Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)) - 10));
             mHRMesurement.setTemp((int) speed);
-            Log.i("SENSOR", String.valueOf(speed));
         }
     }
 
@@ -271,11 +264,12 @@ public class HRService extends Service implements SensorEventListener {
         intent.putExtra("valor", valor);
         sendBroadcast(intent);
         try {
-           JSONObject nou = mHRMesurement.getJSON();
+            JSONObject nou = mHRMesurement.getJSON();
             osw.write(nou+System.getProperty("line.separator"));
             osw.flush();
-            String b = nou.getString("intensity");
-            broadcastUpdate("ACTION_DATA_AVAILABLE", nou.getString("hr"),b );
+            broadcastUpdate("ACTION_DATA_AVAILABLE", nou.getString("hr"),nou.getString("intensity") );
+            mBuilder.setContentText(valor);
+            mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
