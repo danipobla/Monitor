@@ -11,4 +11,6 @@
     <string name="name">Name</string>
     <string name="save">Save</string>
     <string name="clean">Clean</string>
+    <string name="pasword">Pasword</string>
+    <string name="send">Send</string>
 </resources>
