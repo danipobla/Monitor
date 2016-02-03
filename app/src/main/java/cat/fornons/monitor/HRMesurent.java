@@ -59,4 +59,9 @@ public class HRMesurent {
         this.num=0;
         return valor;
     }
+
+    public void setComment(String comment) {
+        this.comment=comment;
+    }
+
 }

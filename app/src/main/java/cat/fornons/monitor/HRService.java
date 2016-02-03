@@ -47,7 +47,7 @@ import java.util.UUID;
 
 public class HRService extends Service implements SensorEventListener {
 
-    HRMesurent mHRMesurement;
+    public HRMesurent mHRMesurement;
     String mDeviceAddress;
     private BluetoothAdapter mBluetoohAdapter;
     private BluetoothManager mBluetoohManager;
@@ -105,15 +105,15 @@ public class HRService extends Service implements SensorEventListener {
             }
             mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
             mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-            mSensorManager.registerListener(this,mSensor,SensorManager.SENSOR_DELAY_FASTEST );
+            mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_FASTEST);
 
-        }
+
 
 
         mBuilder = new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_favorite_24dp)
-                        .setContentTitle("Monitor cardíac")
-                        .setContentText("Ritme Cardíac");
+                .setSmallIcon(R.drawable.ic_favorite_24dp)
+                .setContentTitle("Monitor cardíac")
+                .setContentText("Ritme Cardíac");
         Intent resultIntent = new Intent(this, CardiacActivity.class);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
 // Adds the back stack for the Intent (but not the Intent itself)
@@ -126,10 +126,15 @@ public class HRService extends Service implements SensorEventListener {
                         PendingIntent.FLAG_UPDATE_CURRENT
                 );
         mBuilder.setContentIntent(resultPendingIntent);
-        mNotificationManager =(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 // mId allows you to update the notification later on.
         startForeground(NOTIFICATION_ID, mBuilder.build());
+    }else{
+            mHRMesurement.setComment(intent.getStringExtra("COMMENT"));
+
+        }
         return START_REDELIVER_INTENT;
+
     }
 
 
@@ -267,16 +272,18 @@ public class HRService extends Service implements SensorEventListener {
             JSONObject nou = mHRMesurement.getJSON();
             osw.write(nou+System.getProperty("line.separator"));
             osw.flush();
-            broadcastUpdate("ACTION_DATA_AVAILABLE", nou.getString("hr"),nou.getString("intensity") );
+            broadcastUpdate("ACTION_DATA_AVAILABLE", nou.getString("hr"), nou.getString("intensity"));
             mBuilder.setContentText(valor);
             mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+            Log.i("JSON", nou.toString());
+            mHRMesurement.setComment("");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        Log.i("JSON", mHRMesurement.getJSON().toString());
+
     }
 
 
