@@ -7,5 +7,9 @@
     <item android:id="@+id/user"
         android:icon="@drawable/ic_person_24dp"
         android:title="@string/user"
-        android:showAsAction="never"/>
+        android:showAsAction="ifRoom"/>
+    <item android:id="@+id/logout"
+        android:icon="@drawable/ic_exit_to_app_24dp"
+        android:title="@string/logout"
+        android:showAsAction="ifRoom"/>
 </menu>

@@ -175,6 +175,10 @@ public class CardiacActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
 
+            case R.id.logout:
+                intent = new Intent(this,LoginActivity.class);
+                startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
+                finish();
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -233,10 +237,10 @@ public class CardiacActivity extends AppCompatActivity {
 
             try {
                 SharedPreferences userPrefs = getSharedPreferences("cat.fornons.UsingPreferences_preferences", MODE_PRIVATE);
-                hrm.put("name",userPrefs.getString("name", "--"));
-                hrm.put("age", userPrefs.getString("age", "--"));
-                hrm.put("height", userPrefs.getString("height", "--"));
-                hrm.put("weight", userPrefs.getString("weight", "--"));
+                hrm.put("name",userPrefs.getString("name", "0"));
+                hrm.put("age", userPrefs.getString("age", "0"));
+                hrm.put("height", userPrefs.getString("height", "0"));
+                hrm.put("weight", userPrefs.getString("weight", "0"));
 
 
                 JSONArray jsonArray = new JSONArray();
