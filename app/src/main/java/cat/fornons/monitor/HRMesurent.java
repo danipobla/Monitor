@@ -9,11 +9,13 @@ public class HRMesurent {
     String state;
     String intensity;
     String comment;
+    String hrv;
     int temp,num;
 
     public HRMesurent(){
         this.date="";
         this.hr="";
+        this.hrv="";
         this.state ="";
         this.intensity ="";
         this.comment ="";
@@ -28,6 +30,7 @@ public class HRMesurent {
         try {
             hrm.put("date", date);
             hrm.put("hr", hr);
+            hrm.put("hrv", hrv);
             hrm.put("state", state);
             hrm.put("intensity", intensity);
             hrm.put("comment", comment);
@@ -39,9 +42,10 @@ public class HRMesurent {
         return hrm;
     }
 
-    public void setHRM(String valor, String data) {
+    public void setHRM(String valor, String data, String hrv) {
         this.date =data;
         this.hr=valor;
+        this.hrv=hrv;
     }
 
     public void setIntensity(String intensity) {

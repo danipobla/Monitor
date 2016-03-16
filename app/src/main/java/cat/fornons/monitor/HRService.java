@@ -63,6 +63,7 @@ public class HRService extends Service implements SensorEventListener {
     NotificationCompat.Builder mBuilder;
     NotificationManager mNotificationManager;
     Integer NOTIFICATION_ID=1234;
+    Date ant,act = null;
 
 
     private final IBinder binder = new mBinder();
@@ -250,16 +251,18 @@ public class HRService extends Service implements SensorEventListener {
                 format = BluetoothGattCharacteristic.FORMAT_UINT8;
             }
             final int heartRate = characteristic.getIntValue(format, 1);
-
-            Log.i("READ", String.format("Received heart rate: %d - %s", heartRate, data.format(new Date())));
-            nou_valor(String.valueOf(heartRate), data.format(new Date()));
-
+            if (ant != null){
+                act=new Date();
+                Log.i("READ", String.format("Received heart rate: %d - %s - %s", heartRate, data.format(act), String.valueOf(act.getTime() - ant.getTime())));
+                nou_valor(String.valueOf(heartRate), data.format(act), String.valueOf(act.getTime() - ant.getTime()));
+            }
+            ant= new Date();
         }
 
     };
 
-    public void nou_valor(final String valor, final String data) {
-        mHRMesurement.setHRM(valor, data);
+    public void nou_valor(final String valor, final String data, String hrv) {
+        mHRMesurement.setHRM(valor, data, hrv);
         mHRMesurement.setIntensity(String.valueOf(mHRMesurement.getTemp()));
 
         Intent intent = new Intent(this, HRWidget.class);
