@@ -70,12 +70,11 @@ public class MonitorActivity extends AppCompatActivity {
 
         mBleAdapter = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE)).getAdapter();
 
-/*
         if (mBleAdapter == null || !mBleAdapter.isEnabled()){
             Intent enableBtIntent = new Intent (BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent,REQUEST_ENABLE_BT);
         }
-*/
+
 
         mBleScanner = mBleAdapter.getBluetoothLeScanner();
 

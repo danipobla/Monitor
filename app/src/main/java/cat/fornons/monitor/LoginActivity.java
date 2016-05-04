@@ -121,7 +121,7 @@ public class LoginActivity extends AppCompatActivity {
                 userPrefsEditor = userPrefs.edit();
                 userPrefsEditor.putString("name",result);
                 userPrefsEditor.commit();
-                Intent intent = new Intent(getBaseContext(), CardiacActivity.class);
+                Intent intent = new Intent(getBaseContext(), MonitorActivity.class);
                 startActivity(intent);
 
             }

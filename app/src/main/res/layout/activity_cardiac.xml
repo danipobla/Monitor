@@ -15,9 +15,9 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:id="@+id/tvAddress"
-        android:layout_alignParentStart="true"
         android:gravity="center"
-        android:layout_below="@+id/tvCor" />
+        android:layout_below="@+id/tvdispositiu"
+        android:layout_alignParentStart="true" />
 
     <TextView
         android:layout_width="90dp"
@@ -30,26 +30,26 @@
         android:gravity="center"
         android:textIsSelectable="false"
         android:textAlignment="inherit"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_below="@+id/tvHeart"
+        android:layout_alignEnd="@+id/btSend" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="START"
         android:id="@+id/btStartHRM"
-        android:layout_alignTop="@+id/tvCor"
-        android:layout_alignParentStart="true"
-        android:onClick="startService" />
+        android:onClick="startService"
+        android:layout_below="@+id/tvHeart"
+        android:layout_alignParentStart="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="STOP"
         android:id="@+id/btStopHRM"
-        android:layout_alignTop="@+id/tvCor"
-        android:layout_alignParentEnd="true"
-        android:onClick="stopService" />
+        android:onClick="stopService"
+        android:layout_below="@+id/tvHeart"
+        android:layout_alignParentEnd="true" />
 
     <Button
         android:layout_width="wrap_content"
@@ -64,9 +64,9 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/tvAddress"
-        android:id="@+id/linearLayout">
+        android:id="@+id/linearLayout"
+        android:layout_below="@+id/tvmoviment"
+        android:layout_alignParentStart="true">
 
         <ImageView
             android:layout_width="0dp"
@@ -88,14 +88,14 @@
             android:layout_width="0dp"
             android:layout_height="90dp"
             android:id="@+id/ivmitja"
-            android:src="@drawable/ic_directions_bike_24dp"
+            android:src="@drawable/ic_directions_run_black_24dp"
             android:layout_weight="1" />
 
         <ImageView
             android:layout_width="0dp"
             android:layout_height="90dp"
             android:id="@+id/ivalt"
-            android:src="@drawable/ic_directions_car_24dp"
+            android:src="@drawable/ic_directions_bike_24dp"
             android:layout_weight="1" />
     </LinearLayout>
 
@@ -106,9 +106,9 @@
         android:hint="@string/comment"
         android:ems="10"
         android:id="@+id/etComment"
-        android:layout_centerVertical="true"
-        android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/btComment" />
+        android:paddingTop="20dp"
+        android:layout_below="@+id/tvcomentaris"
+        android:layout_alignParentStart="true" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
@@ -122,5 +122,64 @@
         android:layout_alignBottom="@+id/etComment"
         android:layout_alignStart="@+id/btStopHRM"
         android:onClick="saveComment" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/tvHeart"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/heart"
+        android:textStyle="bold"
+        android:layout_below="@+id/tvAddress"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="10dp"
+        android:gravity="center" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/moviment"
+        android:id="@+id/tvmoviment"
+        android:textStyle="bold"
+        android:layout_below="@+id/tvCor"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="10dp"
+        android:gravity="center" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/dispositiu"
+        android:id="@+id/tvdispositiu"
+        android:textStyle="bold"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:gravity="center" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/comentaris"
+        android:id="@+id/tvcomentaris"
+        android:textStyle="bold"
+        android:layout_below="@+id/linearLayout"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="10dp"
+        android:gravity="center" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/sendto"
+        android:id="@+id/textView"
+        android:layout_above="@+id/btSend"
+        android:layout_alignParentStart="true"
+        android:gravity="center"
+        android:textStyle="bold" />
 
 </RelativeLayout>
