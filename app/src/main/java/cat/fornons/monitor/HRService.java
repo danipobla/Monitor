@@ -84,9 +84,7 @@ public class HRService extends Service implements SensorEventListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
-
-
+       // Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
         if (mGatt == null) {
             mHRMesurement = new HRMesurent();
             mDeviceAddress = intent.getStringExtra("EXTRAS_DEVICE_ADDRESS");
@@ -152,14 +150,13 @@ public class HRService extends Service implements SensorEventListener {
                 e.printStackTrace();
             }
         }
-        Toast.makeText(this, "service Destroyed", Toast.LENGTH_SHORT).show();
+        // Toast.makeText(this, "service Destroyed", Toast.LENGTH_SHORT).show();
         try {
             FileInputStream fIn = new FileInputStream(file);
             isr= new InputStreamReader(fIn);
             BufferedReader reader = new BufferedReader(isr);
             String line =reader.readLine();
             while (line != null){
-                Log.i("READ", line);
                 line =reader.readLine();
             }
             } catch (FileNotFoundException e) {
@@ -172,14 +169,17 @@ public class HRService extends Service implements SensorEventListener {
     }
 
     public void onSensorChanged(SensorEvent event){
-        float x,y,z;
+        double x,y,z;
+        double[] gravity = new double[3];
 
+        final double alpha= 0.8;
         if (event.sensor.getType()==Sensor.TYPE_ACCELEROMETER){
-            x=(event.values[0]);
-            y=(event.values[1]);
-            z=(event.values[2]);
-            long speed = Math.round(Math.abs(Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)) - 10));
-            mHRMesurement.setTemp((int) speed);
+            x=event.values[0];
+            y=event.values[1];
+            z=event.values[2];
+
+            long speed = Math.round(Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2)));
+            mHRMesurement.setTemp((int) speed - 9);
         }
     }
 

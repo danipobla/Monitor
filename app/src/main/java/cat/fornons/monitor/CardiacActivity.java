@@ -223,7 +223,7 @@ public class CardiacActivity extends AppCompatActivity {
 
             try {
                 SharedPreferences userPrefs = getSharedPreferences("cat.fornons.UsingPreferences_preferences", MODE_PRIVATE);
-                hrm.put("name",userPrefs.getString("name", "0"));
+                hrm.put("user",userPrefs.getString("user", "0"));
                 hrm.put("age", userPrefs.getString("age", "0"));
                 hrm.put("height", userPrefs.getString("height", "0"));
                 hrm.put("weight", userPrefs.getString("weight", "0"));
@@ -246,7 +246,7 @@ public class CardiacActivity extends AppCompatActivity {
 
                 data = hrm.toString().getBytes();
                 //Enviem POST
-                URL url = new URL("http://fornons.sytes.net:1234/dades/");
+                URL url = new URL("http://fornons.sytes.net/dades/");
                 urlConnection = (HttpURLConnection) url.openConnection();
 
                 urlConnection.setDoOutput(true);
@@ -254,6 +254,7 @@ public class CardiacActivity extends AppCompatActivity {
 
                 OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
                 writeStream(out, data);
+                Toast.makeText(getApplicationContext(),"SENDING DATA" , Toast.LENGTH_SHORT).show();
 
 
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
@@ -261,7 +262,9 @@ public class CardiacActivity extends AppCompatActivity {
             }
            catch (Exception e){
                 e.printStackTrace();
-            }
+                Toast.makeText(getApplicationContext(),"ERROR SENDING DATA" , Toast.LENGTH_LONG).show();
+
+           }
             finally{
                 urlConnection.disconnect();
             }
@@ -273,7 +276,7 @@ public class CardiacActivity extends AppCompatActivity {
 
 
         protected void onPostExecute(String result) {
-            Toast.makeText(getApplicationContext(),result , Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(),result , Toast.LENGTH_LONG).show();
             Log.i("Insert", result);
         }
 

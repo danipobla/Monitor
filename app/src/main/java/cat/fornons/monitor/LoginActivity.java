@@ -90,7 +90,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 data = params[0].toString().getBytes();
 
-                URL url = new URL("http://fornons.sytes.net:1234/login/");
+                URL url = new URL("http://fornons.sytes.net/login/");
                 urlConnection = (HttpURLConnection) url.openConnection();
 
                 urlConnection.setDoOutput(true);
@@ -119,7 +119,7 @@ public class LoginActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
             }else{
                 userPrefsEditor = userPrefs.edit();
-                userPrefsEditor.putString("name",result);
+                userPrefsEditor.putString("user",result);
                 userPrefsEditor.commit();
                 Intent intent = new Intent(getBaseContext(), MonitorActivity.class);
                 startActivity(intent);

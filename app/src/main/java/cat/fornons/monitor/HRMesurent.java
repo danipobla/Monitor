@@ -6,7 +6,6 @@ import org.json.JSONObject;
 public class HRMesurent {
     String date;
     String hr;
-    String state;
     String intensity;
     String comment;
     String hrv;
@@ -16,7 +15,6 @@ public class HRMesurent {
         this.date="";
         this.hr="";
         this.hrv="";
-        this.state ="";
         this.intensity ="";
         this.comment ="";
         this.temp=0;
@@ -31,7 +29,6 @@ public class HRMesurent {
             hrm.put("date", date);
             hrm.put("hr", hr);
             hrm.put("hrv", hrv);
-            hrm.put("state", state);
             hrm.put("intensity", intensity);
             hrm.put("comment", comment);
 
@@ -58,10 +55,13 @@ public class HRMesurent {
     }
 
     public int getTemp() {
-        Integer valor = this.temp/this.num;
-        this.temp=0;
-        this.num=0;
-        return valor;
+            Integer valor=0;
+            if (this.num!=0) {valor= this.temp/this.num; }
+            this.temp=0;
+            this.num=0;
+            setTemp(0);
+            return valor;
+
     }
 
     public void setComment(String comment) {

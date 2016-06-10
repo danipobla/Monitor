@@ -14,43 +14,44 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:id="@+id/tvAge"
-        android:layout_centerHorizontal="true"
-        android:hint="@string/age"/>
+        android:hint="@string/age"
+        android:layout_below="@+id/btClean"
+        android:layout_centerHorizontal="true" />
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
         android:id="@+id/tvHeight"
-        android:layout_below="@+id/tvAge"
-        android:layout_centerHorizontal="true"
-        android:hint="@string/height"/>
+        android:hint="@string/height"
+        android:layout_below="@+id/tvWeight"
+        android:layout_centerHorizontal="true" />
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/tvWeight"
         android:ems="10"
-        android:layout_below="@+id/tvHeight"
-        android:layout_alignStart="@+id/tvHeight"
-        android:hint="@string/weight"/>
+        android:hint="@string/weight"
+        android:layout_below="@+id/tvAge"
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/save"
         android:id="@+id/btSave"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:onClick="savePref" />
+        android:onClick="savePref"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@+id/tvAge" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/clean"
         android:id="@+id/btClean"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:onClick="cleanPref" />
+        android:onClick="cleanPref"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>
